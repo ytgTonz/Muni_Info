@@ -1,5 +1,5 @@
 from twilio.twiml.messaging_response import MessagingResponse
-from twilio.twiml.messaging_response import Message
+#from twilio.twiml.messaging_response import Message
 from twilio.rest import Client
 from flask import Flask, request
 import os 
@@ -10,13 +10,15 @@ app = Flask(__name__)
 def info_reply():
 
     inc_msg = request.form.get("Body", None).lower()
+
     resp = MessagingResponse()
-    msg = Message()
+    msg = resp.message()
     account_sid = os.environ["TWILIO_ACCOUNT_SID"]
     auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-    #client = Client(account_sid, auth_token)
+    #client = Client(account_sid, auth_token
 
 
+    
     if inc_msg in ["menu", "hi", "hello"]:
         msg.body(
             "📋 *Main Menu*\n"
@@ -27,6 +29,9 @@ def info_reply():
             "5. Emergency Services\n\n"
             "Please type the number of your choice."
         )
+            
+       
+           
 
     elif inc_msg == "1":
         msg.body("You are in Amathole District")
@@ -39,9 +44,20 @@ def info_reply():
     elif inc_msg == "5":
         msg.body("Emergency Services: \n Police: 10111 \n Ambulance: 10177 ")
     else:
-        msg.body("Welcome! Please type "'"*menu*"'" to see options.")
+        msg.body("Welcome! Please select the option you would like.")
+        inc_msg = "menu"
+        msg.body(
+            "\n📋 *Main Menu*\n"
+            "1. View District\n"
+            "2. View Municipality\n"
+            "3. View Map\n"
+            "4. Lodge Complaint\n"
+            "5. Emergency Services\n\n"
+            "Please type the number of your choice."
+        )
+      #  msg.body("Welcome! Please type "'"*menu*"'" to see options.")
 
-    resp.append(msg)
+   # resp.append(msg)
     return str(resp)
 
 if __name__ == "__main__":

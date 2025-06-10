@@ -1,0 +1,15 @@
+{
+    "landline" : [
+        {
+            "service" : {
+            "EMS" : "10177",
+            "SAPS" : "10111"
+            }
+        }
+    ],
+    "cellphone" : [
+        {
+            "Quick Emergency" : "112"
+        }
+    ]
+}
