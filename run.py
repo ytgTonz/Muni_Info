@@ -104,9 +104,10 @@ def whatsapp_webhook():
           msg.body("Sorry 😅, I could not understand that, plz follow my send your location so I can look up your current Muni_Info!")   
         #  print(state)
     else:
-        msg.body("📍 Please send your *location* to look up Muni_Info.")
-        user_state[sender] = "started"
-        #print(state)
+        if state == "start":
+         msg.body("📍 Please send your *location* to look up Muni_Info.")
+         user_state[sender] = "started"
+         #print(state)
 
     return str(resp)
 
