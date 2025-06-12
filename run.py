@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 from twilio.twiml.messaging_response import MessagingResponse
 import requests 
 
@@ -8,6 +8,12 @@ MAPIT_BASE_URL = "https://mapit.openup.org.za"
 #tracking userstates
 user_state = {} 
 
+def compliants_lodge(msg, sender, complaint_type, incoming_msg):
+    msg.body("Please type the description of the issue. \nOptionally, you can include an image along with your description.📸")
+    complaints = {"sender": sender, "complaint_type" :complaint_type, "complaint_description": incoming_msg}
+    user_state[sender] = "exit_compliant"
+      
+
 @run.route("/whatsapp", methods= ['POST', 'GET'])
 def whatsapp_webhook():
 
@@ -16,16 +22,17 @@ def whatsapp_webhook():
     lat = request.values.get("Latitude")
     lon = request.values.get("Longitude")
     sender = request.form.get("From")
+    
 
     resp = MessagingResponse()
     msg = resp.message()
-
     state = user_state.get(sender, "start")
     complaints = {}
 
     
 
     if lat and lon and state == "started":
+        user_state[sender] = "in_location"
         map_it = f"{MAPIT_BASE_URL}/point/4326/{lon},{lat}"
         print(map_it)
         res = requests.get(map_it)
@@ -57,8 +64,7 @@ def whatsapp_webhook():
             msg.body(response_text)
         else:
             response_text = "*Sorry, we couldn't locate your position. Please try again*"
-   
-    elif incoming_msg == "1" and state == "started":
+    elif incoming_msg == "1" and state == "in_location" or state == "in_compliants":
             user_state[sender] = "in_complaints"
             msg.body(
                 "Please select the type of complaint you would like to lodge.\n\n"
@@ -70,44 +76,45 @@ def whatsapp_webhook():
                 "_*Please enter the \"#\" key followed by number of the complaint type you would like to lodge.*_"
                 )
             
-    if incoming_msg == "#1" and state == "in_complaints":
+    elif incoming_msg == "#1" and state == "in_complaints":
             complaint_type = "water_complaint"
-            msg.body("Please type the description of the issue. \nOptionally, you can include an image along with your description.📸")
-            complaints = {"sender": sender, "complaint_type" :complaint_type, "complaint_description": incoming_msg}
+            return compliants_lodge(msg, sender, complaint_type, incoming_msg)
+    
     elif incoming_msg == "#2" and state == "in_complaints":
             complaint_type = "power_complaint"
-            msg.body("Please type the description of the issue. \nOptionally, you can include an image along with your description.📸")
-            complaints = {"sender": sender, "complaint_type" :complaint_type, "complaint_description": incoming_msg}
+            return compliants_lodge(msg, sender, complaint_type, incoming_msg)
+    
     elif incoming_msg == "#3" and state == "in_complaints":
             complaint_type = "sanitation_complaint"
-            msg.body("Please type the description of the issue. \nOptionally, you can include an image along with your description.📸")
-            complaints = {"sender": sender, "complaint_type" :complaint_type, "complaint_description": incoming_msg}
+            return compliants_lodge(msg, sender, complaint_type, incoming_msg)
+
     elif incoming_msg == "#4" and state == "in_complaints":
             complaint_type = "road_complaint"
-            msg.body("Please type the description of the issue. \nOptionally, you can include an image along with your description.📸")
-            complaints = {"sender": sender, "complaint_type" :complaint_type, "complaint_description": incoming_msg}
+            return compliants_lodge(msg, sender, complaint_type, incoming_msg)
+
     elif incoming_msg == "#5" and state == "in_complaints":
             complaint_type = "other_complaint"
-            msg.body("Please type the description of the issue. \nOptionally, you can include an image along with your description.📸")
-            complaints = {"sender": sender, "complaint_type" :complaint_type, "complaint_description": incoming_msg}
+            return compliants_lodge(msg, sender, complaint_type, incoming_msg)
 
-
-    elif incoming_msg == "2" and state == "started":
+    elif not incoming_msg:
+            msg.body("Please enter the *\"#\"* key followed by the number of the option you want. \n\n_e.g #4_x")
+    
+    elif incoming_msg == "2" and state == "in_location":
             user_state[sender] = "in_EMS"
             #View EMS 
-    elif incoming_msg == "3" and state == "started":
+    elif incoming_msg == "3" and state == "in_location":
             #Display map of muni location
             user_state[sender] = "in_map"
-       
-
     elif state == "started" and not lon and not lat:
           msg.body("Sorry 😅, I could not understand that, plz follow my send your location so I can look up your current Muni_Info!")   
-        #  print(state)
+          print(state)
     else:
-        if state == "start":
-         msg.body("📍 Please send your *location* to look up Muni_Info.")
-         user_state[sender] = "started"
-         #print(state)
+        msg.body("📍 Please send your *location* to look up Muni_Info.")
+        user_state[sender] = "started"
+
+    if state == "exit_complaint":
+          redirect()
+
 
     return str(resp)
 
