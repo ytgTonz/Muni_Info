@@ -1,0 +1,225 @@
+{% extends "base/base.html" %}
+
+{% block title %}Dashboard - Muni-Info Admin{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-primary">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Complaints
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ complaint_stats.total }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-success">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Resolved Complaints
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ complaint_stats.by_status.get('resolved', 0) }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-warning">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            In Progress
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ complaint_stats.by_status.get('in_progress', 0) }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-info">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total Users
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ user_stats.total_users }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Complaints by Status</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-6 col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Complaints by Priority</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Complaints -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold">Recent Complaints</h6>
+                <a href="{{ url_for('admin.complaints') }}" class="btn btn-primary btn-sm">
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in recent_complaints %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('admin.complaint_detail', reference_id=complaint.reference_id) }}" 
+                                       class="text-decoration-none">
+                                        {{ complaint.reference_id }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ complaint.complaint_type }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status-{{ complaint.status.value }}">
+                                        {{ complaint.get_status_display() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-priority-{{ complaint.priority.value }}">
+                                        {{ complaint.get_priority_display() }}
+                                    </span>
+                                </td>
+                                <td>{{ complaint.timestamp.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    {{ complaint.description[:50] }}...
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No recent complaints</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Status Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for item in status_data %}'{{ item.status }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            data: [{% for item in status_data %}{{ item.count }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: [{% for item in status_data %}'{{ item.color }}'{{ ',' if not loop.last }}{% endfor %}]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+            position: 'bottom'
+        }
+    }
+});
+
+// Priority Chart
+const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+const priorityChart = new Chart(priorityCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for item in priority_data %}'{{ item.priority }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            label: 'Complaints',
+            data: [{% for item in priority_data %}{{ item.count }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: [{% for item in priority_data %}'{{ item.color }}'{{ ',' if not loop.last }}{% endfor %}]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

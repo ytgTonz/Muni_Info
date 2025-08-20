@@ -1,0 +1,349 @@
+{% extends "base/base.html" %}
+
+{% block title %}Analytics - Muni-Info Admin{% endblock %}
+
+{% block page_title %}Analytics & Reports{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-primary">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Complaints (30 days)
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ timeline_data|sum(attribute='count') }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-success">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Resolution Rate
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% set total = complaint_stats.total %}
+                            {% set resolved = complaint_stats.by_status.get('resolved', 0) %}
+                            {{ "%.1f"|format((resolved / total * 100) if total > 0 else 0) }}%
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-percentage fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-warning">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Avg Daily Complaints
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {{ "%.1f"|format((timeline_data|sum(attribute='count')) / 30) }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-day fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-info">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Most Common Type
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            {% set max_type = type_data|max(attribute='count') if type_data else {'type': 'N/A'} %}
+                            {{ max_type.type }}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-list-alt fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Timeline Chart -->
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Complaint Timeline (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="timelineChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Type Distribution -->
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Complaints by Type</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="row">
+    <!-- Status Breakdown -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Status Breakdown</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for status, count in complaint_stats.by_status.items() %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-status-{{ status }}">
+                                        {{ status.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ count }}</td>
+                                <td>{{ "%.1f"|format((count / complaint_stats.total * 100) if complaint_stats.total > 0 else 0) }}%</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-{% if status == 'resolved' %}success{% elif status == 'in_progress' %}warning{% elif status == 'under_review' %}info{% elif status == 'closed' %}secondary{% else %}primary{% endif %}" 
+                                             style="width: {{ (count / complaint_stats.total * 100) if complaint_stats.total > 0 else 0 }}%">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Priority Breakdown -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Priority Breakdown</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Priority</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for priority, count in complaint_stats.by_priority.items() %}
+                            <tr>
+                                <td>
+                                    <span class="badge badge-priority-{{ priority }}">
+                                        {{ priority.title() }}
+                                    </span>
+                                </td>
+                                <td>{{ count }}</td>
+                                <td>{{ "%.1f"|format((count / complaint_stats.total * 100) if complaint_stats.total > 0 else 0) }}%</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-{% if priority == 'urgent' %}danger{% elif priority == 'high' %}warning{% elif priority == 'medium' %}info{% else %}success{% endif %}" 
+                                             style="width: {{ (count / complaint_stats.total * 100) if complaint_stats.total > 0 else 0 }}%">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">Export Options</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Report Formats</h6>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary" onclick="exportData('csv')">
+                                <i class="fas fa-file-csv me-1"></i>Export CSV
+                            </button>
+                            <button type="button" class="btn btn-outline-success" onclick="exportData('excel')">
+                                <i class="fas fa-file-excel me-1"></i>Export Excel
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="exportData('pdf')">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Time Range</h6>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="startDate">
+                            <span class="input-group-text">to</span>
+                            <input type="date" class="form-control" id="endDate">
+                            <button class="btn btn-primary" onclick="generateCustomReport()">
+                                Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Timeline Chart
+const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+const timelineChart = new Chart(timelineCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for item in timeline_data %}'{{ item.date }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            label: 'Daily Complaints',
+            data: [{% for item in timeline_data %}{{ item.count }}{{ ',' if not loop.last }}{% endfor %}],
+            borderColor: 'rgb(102, 126, 234)',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            },
+            x: {
+                display: true,
+                ticks: {
+                    maxTicksLimit: 10
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+
+// Type Distribution Chart
+const typeCtx = document.getElementById('typeChart').getContext('2d');
+const typeChart = new Chart(typeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [{% for item in type_data %}'{{ item.type }}'{{ ',' if not loop.last }}{% endfor %}],
+        datasets: [{
+            data: [{% for item in type_data %}{{ item.count }}{{ ',' if not loop.last }}{% endfor %}],
+            backgroundColor: [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Export Functions
+function exportData(format) {
+    // This would typically make an API call to generate the export
+    alert(`Exporting data in ${format.toUpperCase()} format... (Feature coming soon)`);
+}
+
+function generateCustomReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    alert(`Generating custom report from ${startDate} to ${endDate}... (Feature coming soon)`);
+}
+
+// Set default dates
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+    
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

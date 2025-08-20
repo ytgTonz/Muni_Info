@@ -1,0 +1,238 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Muni-Info - Municipal Services Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 mb-4">Municipal Services Made Simple</h1>
+                <p class="lead mb-4">
+                    Connect with your municipality, lodge complaints, and stay informed 
+                    about local services - all from one convenient platform.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Lodge Complaint
+                    </a>
+                    <a href="#" class="btn btn-outline-light btn-lg" onclick="getLocation()">
+                        <i class="fas fa-map-marker-alt me-2"></i>Find My Municipality
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-city" style="font-size: 12rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Services -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col">
+                <h2>Quick Services</h2>
+                <p class="text-muted">Access the most commonly used municipal services</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card service-card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Lodge Complaint</h5>
+                        <p class="card-text">Report municipal service issues and track their resolution</p>
+                        <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-primary">Get Started</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card service-card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-search fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Check Status</h5>
+                        <p class="card-text">Track the progress of your submitted complaints</p>
+                        <a href="{{ url_for('portal.complaint_status') }}" class="btn btn-primary">Check Now</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card service-card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-star fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Rate Services</h5>
+                        <p class="card-text">Share your feedback to help improve municipal services</p>
+                        <a href="{{ url_for('portal.rate_service') }}" class="btn btn-primary">Rate Now</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card service-card h-100 text-center">
+                    <div class="card-body">
+                        <i class="fas fa-bullhorn fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Announcements</h5>
+                        <p class="card-text">Stay updated with the latest municipal news and alerts</p>
+                        <a href="{{ url_for('portal.announcements') }}" class="btn btn-primary">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col">
+                <h2 class="mb-5">Service Statistics</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                        <h3 class="card-title">{{ stats.total }}</h3>
+                        <p class="card-text">Total Complaints</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 text-center">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h3 class="card-title">{{ stats.by_status.get('resolved', 0) }}</h3>
+                        <p class="card-text">Resolved Issues</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 text-center">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                        <h3 class="card-title">{{ stats.by_status.get('in_progress', 0) }}</h3>
+                        <p class="card-text">In Progress</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 text-center">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <i class="fas fa-percentage fa-3x text-info mb-3"></i>
+                        <h3 class="card-title">
+                            {% set total = stats.total %}
+                            {% set resolved = stats.by_status.get('resolved', 0) %}
+                            {{ "%.0f"|format((resolved / total * 100) if total > 0 else 0) }}%
+                        </h3>
+                        <p class="card-text">Resolution Rate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Announcements -->
+{% if announcements %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h2 class="mb-4">Recent Announcements</h2>
+                
+                {% for announcement in announcements %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h5 class="card-title">
+                                    {{ announcement.get_type_display() }}
+                                    {{ announcement.title }}
+                                </h5>
+                                <p class="card-text">{{ announcement.content[:150] }}{% if announcement.content|length > 150 %}...{% endif %}</p>
+                                <small class="text-muted">
+                                    {{ announcement.created_at.strftime('%d %b %Y') }} • {{ announcement.municipality }}
+                                </small>
+                            </div>
+                            <div>
+                                <span class="badge bg-{% if announcement.priority.value == 'urgent' %}danger{% elif announcement.priority.value == 'high' %}warning{% else %}secondary{% endif %}">
+                                    {{ announcement.get_priority_display() }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="text-center">
+                    <a href="{{ url_for('portal.announcements') }}" class="btn btn-outline-primary">
+                        View All Announcements
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-phone me-2"></i>Emergency Numbers
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Police</strong><br>
+                            <a href="tel:10111" class="text-decoration-none">📞 10111</a>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Ambulance</strong><br>
+                            <a href="tel:10177" class="text-decoration-none">🚑 10177</a>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Fire Services</strong><br>
+                            <a href="tel:10177" class="text-decoration-none">🚒 10177</a>
+                        </div>
+                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger btn-sm w-100">
+                            More Emergency Info
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            window.location.href = `{{ url_for('portal.location_lookup') }}?lat=${lat}&lon=${lon}`;
+        }, function(error) {
+            alert('Unable to get location. Please try the manual location lookup.');
+            window.location.href = `{{ url_for('portal.location_lookup') }}`;
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+        window.location.href = `{{ url_for('portal.location_lookup') }}`;
+    }
+}
+</script>
+{% endblock %}

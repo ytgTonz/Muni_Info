@@ -1,0 +1,287 @@
+{% extends "base/base.html" %}
+
+{% block title %}Complaints - Muni-Info Admin{% endblock %}
+
+{% block page_title %}Complaint Management{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <button type="button" class="btn btn-outline-primary" onclick="refreshComplaints()">
+        <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#filtersModal">
+        <i class="fas fa-filter"></i> Filters
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filters Row -->
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" name="status" id="status">
+                            <option value="">All Statuses</option>
+                            {% for status in statuses %}
+                            <option value="{{ status.value }}" {% if status_filter == status.value %}selected{% endif %}>
+                                {{ status.value.title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="priority" class="form-label">Priority</label>
+                        <select class="form-select" name="priority" id="priority">
+                            <option value="">All Priorities</option>
+                            {% for priority in priorities %}
+                            <option value="{{ priority.value }}" {% if priority_filter == priority.value %}selected{% endif %}>
+                                {{ priority.value.title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <a href="{{ url_for('admin.complaints') }}" class="btn btn-outline-secondary">
+                            Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaints Table -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold">
+                    Complaints ({{ pagination.total }} total)
+                </h6>
+                <div class="text-muted small">
+                    Showing {{ ((pagination.page - 1) * pagination.per_page) + 1 }} - 
+                    {{ pagination.page * pagination.per_page if pagination.page * pagination.per_page < pagination.total else pagination.total }}
+                    of {{ pagination.total }}
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Reference</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Submitted</th>
+                                <th>Updated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in complaints %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('admin.complaint_detail', reference_id=complaint.reference_id) }}" 
+                                       class="text-decoration-none fw-bold">
+                                        {{ complaint.reference_id }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ complaint.complaint_type }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-status-{{ complaint.status.value }}">
+                                        {{ complaint.get_status_display() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-priority-{{ complaint.priority.value }}">
+                                        {{ complaint.get_priority_display() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>{{ complaint.timestamp.strftime('%d %b %Y %H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <small>
+                                        {% if complaint.updated_at != complaint.timestamp %}
+                                            {{ complaint.updated_at.strftime('%d %b %Y %H:%M') }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('admin.complaint_detail', reference_id=complaint.reference_id) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                onclick="updateComplaintStatus('{{ complaint.reference_id }}', 'resolved')">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    No complaints found matching the current filters.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            {% if pagination.pages > 1 %}
+            <div class="card-footer">
+                <nav aria-label="Complaints pagination">
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.complaints', page=pagination.prev_num, status=status_filter, priority=priority_filter) }}">
+                                Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in range(1, pagination.pages + 1) %}
+                            {% if page_num == pagination.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% elif page_num <= 2 or page_num > pagination.pages - 2 or (pagination.page - 2 <= page_num <= pagination.page + 2) %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.complaints', page=page_num, status=status_filter, priority=priority_filter) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% elif page_num == 3 or page_num == pagination.pages - 2 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.complaints', page=pagination.next_num, status=status_filter, priority=priority_filter) }}">
+                                Next
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Complaint Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="statusForm">
+                    <input type="hidden" id="complaintRef" name="reference_id">
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label">New Status</label>
+                        <select class="form-select" id="newStatus" name="status" required>
+                            {% for status in statuses %}
+                            <option value="{{ status.value }}">{{ status.value.title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="statusNotes" class="form-label">Notes (Optional)</label>
+                        <textarea class="form-control" id="statusNotes" name="notes" rows="3" 
+                                  placeholder="Add any notes about this status update..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitStatusUpdate()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshComplaints() {
+    window.location.reload();
+}
+
+function updateComplaintStatus(referenceId, status = null) {
+    document.getElementById('complaintRef').value = referenceId;
+    if (status) {
+        document.getElementById('newStatus').value = status;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    modal.show();
+}
+
+function submitStatusUpdate() {
+    const form = document.getElementById('statusForm');
+    const formData = new FormData(form);
+    const referenceId = formData.get('reference_id');
+    
+    const data = {
+        status: formData.get('status'),
+        notes: formData.get('notes')
+    };
+    
+    fetch(`/admin/complaints/${referenceId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('main').insertBefore(alertDiv, document.querySelector('.row'));
+            
+            // Close modal and refresh page
+            bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+            setTimeout(() => window.location.reload(), 1000);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the complaint status.');
+    });
+}
+</script>
+{% endblock %}

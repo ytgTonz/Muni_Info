@@ -1,0 +1,158 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Submit Complaint - Muni-Info{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Lodge a Complaint
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Use this form to report municipal service issues. We'll provide you with a reference number 
+                        to track your complaint's progress.
+                    </p>
+                    
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone_number" class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                       placeholder="+27 XX XXX XXXX" required>
+                                <div class="form-text">We'll use this to send you updates</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="complaint_type" class="form-label">Complaint Type *</label>
+                                <select class="form-select" id="complaint_type" name="complaint_type" required>
+                                    <option value="">Select complaint type</option>
+                                    <option value="Water">Water Services</option>
+                                    <option value="Electricity">Electricity</option>
+                                    <option value="Sanitation">Sanitation</option>
+                                    <option value="Roads">Roads & Infrastructure</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">Priority Level</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="low">🟢 Low - Minor issue, not urgent</option>
+                                <option value="medium" selected>🟡 Medium - Standard issue</option>
+                                <option value="high">🟠 High - Significant impact</option>
+                                <option value="urgent">🔴 Urgent - Emergency or safety issue</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description *</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" 
+                                      placeholder="Please describe the issue in detail. Include location, when it started, and any other relevant information..." required></textarea>
+                            <div class="form-text">Be as specific as possible to help us resolve your issue quickly</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="location_consent" required>
+                                <label class="form-check-label" for="location_consent">
+                                    I consent to sharing my location information to help with complaint resolution
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-paper-plane me-2"></i>Submit Complaint
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{{ url_for('portal.index') }}" class="btn btn-outline-secondary btn-lg w-100">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Information -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-info-circle text-info me-2"></i>
+                                What happens next?
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">✅ You'll receive a reference number</li>
+                                <li class="mb-2">📱 SMS confirmation will be sent</li>
+                                <li class="mb-2">🔍 Your complaint will be reviewed</li>
+                                <li class="mb-2">📢 You'll receive status updates</li>
+                                <li>✅ Resolution notification when complete</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                Response Times
+                            </h5>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2"><span class="badge bg-danger">Urgent</span> - Within 2 hours</li>
+                                <li class="mb-2"><span class="badge bg-warning">High</span> - Within 24 hours</li>
+                                <li class="mb-2"><span class="badge bg-info">Medium</span> - Within 3 days</li>
+                                <li><span class="badge bg-success">Low</span> - Within 7 days</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-detect location if user gives permission
+document.addEventListener('DOMContentLoaded', function() {
+    const locationConsent = document.getElementById('location_consent');
+    
+    locationConsent.addEventListener('change', function() {
+        if (this.checked && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                console.log('Location detected:', position.coords.latitude, position.coords.longitude);
+                // Could store coordinates to include with complaint
+            }, function(error) {
+                console.log('Location detection failed:', error);
+            });
+        }
+    });
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const phoneNumber = document.getElementById('phone_number').value;
+    const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+    
+    if (!phoneRegex.test(phoneNumber)) {
+        e.preventDefault();
+        alert('Please enter a valid phone number');
+        return false;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,388 @@
+{% extends "base/base.html" %}
+
+{% block title %}Complaint {{ complaint.reference_id }} - Muni-Info Admin{% endblock %}
+
+{% block page_title %}Complaint Details{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group">
+    <a href="{{ url_for('admin.complaints') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Complaints
+    </a>
+    <button type="button" class="btn btn-primary" onclick="updateComplaintStatus('{{ complaint.reference_id }}')">
+        <i class="fas fa-edit"></i> Update Status
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Complaint Information -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Complaint Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Reference ID:</strong></div>
+                    <div class="col-sm-9">
+                        <code>{{ complaint.reference_id }}</code>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Type:</strong></div>
+                    <div class="col-sm-9">
+                        <span class="badge bg-secondary fs-6">{{ complaint.complaint_type }}</span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Status:</strong></div>
+                    <div class="col-sm-9">
+                        <span class="badge badge-status-{{ complaint.status.value }} fs-6">
+                            {{ complaint.get_status_display() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Priority:</strong></div>
+                    <div class="col-sm-9">
+                        <span class="badge badge-priority-{{ complaint.priority.value }} fs-6">
+                            {{ complaint.get_priority_display() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Submitted:</strong></div>
+                    <div class="col-sm-9">{{ complaint.timestamp.strftime('%d %B %Y at %H:%M') }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Last Updated:</strong></div>
+                    <div class="col-sm-9">
+                        {% if complaint.updated_at != complaint.timestamp %}
+                            {{ complaint.updated_at.strftime('%d %B %Y at %H:%M') }}
+                        {% else %}
+                            <em>Not updated</em>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if complaint.assigned_to %}
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Assigned To:</strong></div>
+                    <div class="col-sm-9">{{ complaint.assigned_to }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-text me-2"></i>
+                    Description
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ complaint.description }}</p>
+            </div>
+        </div>
+        
+        <!-- Resolution Notes -->
+        {% if complaint.resolution_notes %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clipboard-check me-2"></i>
+                    Resolution Notes
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ complaint.resolution_notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Media Attachments -->
+        {% if complaint.image_urls %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-images me-2"></i>
+                    Attachments ({{ complaint.image_urls|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for image_url in complaint.image_urls %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <img src="{{ image_url }}" class="card-img-top" alt="Complaint attachment" 
+                                 style="height: 200px; object-fit: cover;" data-bs-toggle="modal" 
+                                 data-bs-target="#imageModal" onclick="showImage('{{ image_url }}')">
+                            <div class="card-body p-2">
+                                <small class="text-muted">Attachment {{ loop.index }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Contact Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    Contact Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Phone Number:</strong><br>
+                    <a href="tel:{{ complaint.sender }}" class="text-decoration-none">
+                        {{ complaint.sender }}
+                    </a>
+                </div>
+                <div class="mb-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="sendWhatsAppMessage('{{ complaint.sender }}')">
+                        <i class="fab fa-whatsapp me-1"></i>
+                        Send WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Location Information -->
+        {% if complaint.location_info %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    Location
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>Province:</strong><br>
+                    {{ complaint.location_info.get('province', 'N/A') }}
+                </div>
+                <div class="mb-2">
+                    <strong>District:</strong><br>
+                    {{ complaint.location_info.get('district', 'N/A') }}
+                </div>
+                <div class="mb-2">
+                    <strong>Municipality:</strong><br>
+                    {{ complaint.location_info.get('municipality', 'N/A') }}
+                </div>
+                {% if complaint.location_info.get('latitude') and complaint.location_info.get('longitude') %}
+                <div class="mb-2">
+                    <strong>Coordinates:</strong><br>
+                    <small class="text-muted">
+                        {{ "%.6f"|format(complaint.location_info.latitude) }}, 
+                        {{ "%.6f"|format(complaint.location_info.longitude) }}
+                    </small>
+                </div>
+                <a href="https://maps.google.com/maps?q={{ complaint.location_info.latitude }},{{ complaint.location_info.longitude }}" 
+                   target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>
+                    View on Map
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if complaint.status.value != 'in_progress' %}
+                    <button class="btn btn-warning btn-sm" 
+                            onclick="quickStatusUpdate('{{ complaint.reference_id }}', 'in_progress')">
+                        <i class="fas fa-play me-1"></i>
+                        Start Progress
+                    </button>
+                    {% endif %}
+                    
+                    {% if complaint.status.value != 'under_review' %}
+                    <button class="btn btn-info btn-sm" 
+                            onclick="quickStatusUpdate('{{ complaint.reference_id }}', 'under_review')">
+                        <i class="fas fa-search me-1"></i>
+                        Under Review
+                    </button>
+                    {% endif %}
+                    
+                    {% if complaint.status.value != 'resolved' %}
+                    <button class="btn btn-success btn-sm" 
+                            onclick="quickStatusUpdate('{{ complaint.reference_id }}', 'resolved')">
+                        <i class="fas fa-check me-1"></i>
+                        Mark Resolved
+                    </button>
+                    {% endif %}
+                    
+                    {% if complaint.status.value != 'closed' %}
+                    <button class="btn btn-secondary btn-sm" 
+                            onclick="quickStatusUpdate('{{ complaint.reference_id }}', 'closed')">
+                        <i class="fas fa-times me-1"></i>
+                        Close Complaint
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Complaint Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="statusForm">
+                    <input type="hidden" id="complaintRef" name="reference_id" value="{{ complaint.reference_id }}">
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label">New Status</label>
+                        <select class="form-select" id="newStatus" name="status" required>
+                            <option value="submitted" {{ 'selected' if complaint.status.value == 'submitted' }}>Submitted</option>
+                            <option value="in_progress" {{ 'selected' if complaint.status.value == 'in_progress' }}>In Progress</option>
+                            <option value="under_review" {{ 'selected' if complaint.status.value == 'under_review' }}>Under Review</option>
+                            <option value="resolved" {{ 'selected' if complaint.status.value == 'resolved' }}>Resolved</option>
+                            <option value="closed" {{ 'selected' if complaint.status.value == 'closed' }}>Closed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="statusNotes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="statusNotes" name="notes" rows="3" 
+                                  placeholder="Add any notes about this status update...">{{ complaint.resolution_notes or '' }}</textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitStatusUpdate()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complaint Attachment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Complaint attachment">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateComplaintStatus(referenceId) {
+    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    modal.show();
+}
+
+function quickStatusUpdate(referenceId, status) {
+    const data = {
+        status: status,
+        notes: `Status updated to ${status} by ${getCurrentUser()}`
+    };
+    
+    fetch(`/admin/complaints/${referenceId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the complaint status.');
+    });
+}
+
+function submitStatusUpdate() {
+    const form = document.getElementById('statusForm');
+    const formData = new FormData(form);
+    const referenceId = formData.get('reference_id');
+    
+    const data = {
+        status: formData.get('status'),
+        notes: formData.get('notes')
+    };
+    
+    fetch(`/admin/complaints/${referenceId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the complaint status.');
+    });
+}
+
+function showImage(imageUrl) {
+    document.getElementById('modalImage').src = imageUrl;
+}
+
+function sendWhatsAppMessage(phoneNumber) {
+    const message = encodeURIComponent(`Hello! This is regarding your complaint ${complaint.reference_id}. How can we assist you further?`);
+    window.open(`https://wa.me/${phoneNumber.replace('+', '')}?text=${message}`, '_blank');
+}
+
+function getCurrentUser() {
+    return '{{ current_user.full_name }}';
+}
+</script>
+{% endblock %}
