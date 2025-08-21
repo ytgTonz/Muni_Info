@@ -1,6 +1,6 @@
 {% extends "portal/base.html" %}
 
-{% block title %}Submit Complaint - Muni-Info{% endblock %}
+{% block title %}Submit Complaint - Government Portal{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -16,7 +16,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <!-- Clear government-style header -->
-            <div class="page-header mb-4">
+            <div class="page-header mb-4 text-center">
                 <h1 class="h2 text-primary mb-2">Submit a Service Complaint</h1>
                 <p class="text-muted">Report municipal service issues and track their resolution</p>
             </div>
@@ -34,13 +34,13 @@
                 </ul>
             </div>
             
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
                     <h2 class="h5 mb-0">
                         <i class="fas fa-edit me-2" aria-hidden="true"></i>Complaint Details
                     </h2>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <p class="text-muted mb-4">
                         <strong>All fields marked with * are required.</strong> 
                         The more information you provide, the faster we can help you.
@@ -114,54 +114,89 @@
                             </div>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <button type="submit" class="btn btn-primary btn-lg w-100">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit Complaint
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <a href="{{ url_for('portal.index') }}" class="btn btn-outline-secondary btn-lg w-100">
-                                    <i class="fas fa-times me-2"></i>Cancel
-                                </a>
-                            </div>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Complaint
+                            </button>
+                            <a href="{{ url_for('portal.index') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
             </div>
             
             <!-- Help Information -->
-            <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card">
+            <div class="row mt-5">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-info-circle text-info me-2"></i>
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-info-circle me-2"></i>
                                 What happens next?
                             </h5>
                             <ul class="list-unstyled mb-0">
-                                <li class="mb-2">✅ You'll receive a reference number</li>
-                                <li class="mb-2">📱 SMS confirmation will be sent</li>
-                                <li class="mb-2">🔍 Your complaint will be reviewed</li>
-                                <li class="mb-2">📢 You'll receive status updates</li>
-                                <li>✅ Resolution notification when complete</li>
+                                <li class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>You'll receive a reference number</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-sms text-primary me-2"></i>
+                                    <span>SMS confirmation will be sent</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-search text-info me-2"></i>
+                                    <span>Your complaint will be reviewed</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-center">
+                                    <i class="fas fa-bell text-warning me-2"></i>
+                                    <span>You'll receive status updates</span>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <span>Resolution notification when complete</span>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="card">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
                         <div class="card-body">
-                            <h5 class="card-title">
-                                <i class="fas fa-clock text-warning me-2"></i>
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-clock me-2"></i>
                                 Response Times
                             </h5>
                             <ul class="list-unstyled mb-0">
-                                <li class="mb-2"><span class="badge bg-danger">Urgent</span> - Within 2 hours</li>
-                                <li class="mb-2"><span class="badge bg-warning">High</span> - Within 24 hours</li>
-                                <li class="mb-2"><span class="badge bg-info">Medium</span> - Within 3 days</li>
-                                <li><span class="badge bg-success">Low</span> - Within 7 days</li>
+                                <li class="mb-2 d-flex align-items-center justify-content-between">
+                                    <span>
+                                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                        <span class="badge bg-danger">Urgent</span>
+                                    </span>
+                                    <span>Within 2 hours</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-center justify-content-between">
+                                    <span>
+                                        <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                        <span class="badge bg-warning text-dark">High</span>
+                                    </span>
+                                    <span>Within 24 hours</span>
+                                </li>
+                                <li class="mb-2 d-flex align-items-center justify-content-between">
+                                    <span>
+                                        <i class="fas fa-minus-circle text-info me-2"></i>
+                                        <span class="badge bg-info">Medium</span>
+                                    </span>
+                                    <span>Within 3 days</span>
+                                </li>
+                                <li class="d-flex align-items-center justify-content-between">
+                                    <span>
+                                        <i class="fas fa-circle text-success me-2"></i>
+                                        <span class="badge bg-success">Low</span>
+                                    </span>
+                                    <span>Within 7 days</span>
+                                </li>
                             </ul>
                         </div>
                     </div>

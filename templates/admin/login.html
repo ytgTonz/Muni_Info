@@ -1,14 +1,16 @@
 {% extends "base/base.html" %}
 
-{% block title %}Login - Muni-Info Admin{% endblock %}
+{% block title %}Staff Login - Government Portal{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center align-items-center min-vh-100">
     <div class="col-md-6 col-lg-4">
         <div class="card shadow">
-            <div class="card-header text-center">
-                <h3 class="mb-0">🏛️ Muni-Info</h3>
-                <p class="mb-0 text-white-50">Municipal Administration</p>
+            <div class="card-header text-center bg-primary text-white">
+                <h3 class="mb-0">
+                    <i class="fas fa-landmark me-2"></i>Government Portal
+                </h3>
+                <p class="mb-0 opacity-75">Staff Access Portal</p>
             </div>
             <div class="card-body p-4">
                 <form method="POST">
@@ -46,7 +48,27 @@
 
 <style>
 .min-vh-100 {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--gov-primary) 0%, var(--gov-secondary) 100%);
+}
+
+.card {
+    border: none;
+    border-radius: 1rem;
+}
+
+.card-header {
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+.input-group-text {
+    background-color: var(--gov-light);
+    border-color: var(--gov-border);
+    color: var(--gov-primary);
+}
+
+.form-control:focus {
+    border-color: var(--gov-primary);
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.25);
 }
 </style>
 {% endblock %}

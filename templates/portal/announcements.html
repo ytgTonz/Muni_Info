@@ -1,36 +1,47 @@
 {% extends "portal/base.html" %}
 
-{% block title %}Community Announcements - Muni-Info{% endblock %}
+{% block title %}Community Announcements - Government Portal{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="display-6">Community Announcements</h1>
-            <p class="text-muted">Stay informed about municipal news, updates, and important notices</p>
-        </div>
-        <div class="col-md-4">
-            <form method="GET" class="d-flex">
-                <select class="form-select me-2" name="municipality" onchange="this.form.submit()">
-                    <option value="">All Municipalities</option>
-                    <option value="City of Cape Town" {{ 'selected' if selected_municipality == 'City of Cape Town' }}>City of Cape Town</option>
-                    <option value="City of Johannesburg" {{ 'selected' if selected_municipality == 'City of Johannesburg' }}>City of Johannesburg</option>
-                    <option value="eThekwini" {{ 'selected' if selected_municipality == 'eThekwini' }}>eThekwini (Durban)</option>
-                    <option value="City of Tshwane" {{ 'selected' if selected_municipality == 'City of Tshwane' }}>City of Tshwane</option>
-                    <option value="Nelson Mandela Bay" {{ 'selected' if selected_municipality == 'Nelson Mandela Bay' }}>Nelson Mandela Bay</option>
-                    <option value="Buffalo City" {{ 'selected' if selected_municipality == 'Buffalo City' }}>Buffalo City</option>
-                    <option value="Mangaung" {{ 'selected' if selected_municipality == 'Mangaung' }}>Mangaung</option>
-                </select>
-            </form>
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="h2 text-primary mb-2">Community Announcements</h1>
+        <p class="text-muted">Stay informed about municipal news, updates, and important notices</p>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="d-flex align-items-center gap-3">
+                        <label for="municipality-filter" class="form-label mb-0 fw-semibold">Filter by Municipality:</label>
+                        <select id="municipality-filter" class="form-select" name="municipality" onchange="this.form.submit()">
+                            <option value="">All Municipalities</option>
+                            <option value="City of Cape Town" {{ 'selected' if selected_municipality == 'City of Cape Town' }}>City of Cape Town</option>
+                            <option value="City of Johannesburg" {{ 'selected' if selected_municipality == 'City of Johannesburg' }}>City of Johannesburg</option>
+                            <option value="eThekwini" {{ 'selected' if selected_municipality == 'eThekwini' }}>eThekwini (Durban)</option>
+                            <option value="City of Tshwane" {{ 'selected' if selected_municipality == 'City of Tshwane' }}>City of Tshwane</option>
+                            <option value="Nelson Mandela Bay" {{ 'selected' if selected_municipality == 'Nelson Mandela Bay' }}>Nelson Mandela Bay</option>
+                            <option value="Buffalo City" {{ 'selected' if selected_municipality == 'Buffalo City' }}>Buffalo City</option>
+                            <option value="Mangaung" {{ 'selected' if selected_municipality == 'Mangaung' }}>Mangaung</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
     
     {% if selected_municipality %}
-    <div class="alert alert-info">
-        <i class="fas fa-filter me-2"></i>
-        Showing announcements for <strong>{{ selected_municipality }}</strong>
-        <a href="{{ url_for('portal.announcements') }}" class="alert-link ms-2">Show all</a>
+    <div class="alert alert-info mb-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <i class="fas fa-filter me-2"></i>
+                Showing announcements for <strong>{{ selected_municipality }}</strong>
+            </div>
+            <a href="{{ url_for('portal.announcements') }}" class="btn btn-sm btn-outline-info">Show All</a>
+        </div>
     </div>
     {% endif %}
     
@@ -39,78 +50,103 @@
         <div class="col-lg-8">
             {% if announcements %}
                 {% for announcement in announcements %}
-                <div class="card mb-4 announcement-card">
-                    <div class="card-header d-flex justify-content-between align-items-start">
-                        <div>
-                            <span class="badge bg-{% if announcement.announcement_type.value == 'emergency' %}danger{% elif announcement.announcement_type.value == 'service_update' %}warning{% elif announcement.announcement_type.value == 'maintenance' %}info{% else %}secondary{% endif %} me-2">
+                <div class="card mb-4 announcement-card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-start">
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-{% if announcement.announcement_type.value == 'emergency' %}danger{% elif announcement.announcement_type.value == 'service_update' %}warning{% elif announcement.announcement_type.value == 'maintenance' %}info{% else %}secondary{% endif %} px-3 py-2">
+                                <i class="fas fa-{% if announcement.announcement_type.value == 'emergency' %}exclamation-triangle{% elif announcement.announcement_type.value == 'service_update' %}info-circle{% elif announcement.announcement_type.value == 'maintenance' %}tools{% else %}bullhorn{% endif %} me-1"></i>
                                 {{ announcement.get_type_display() }}
                             </span>
-                            <span class="badge bg-{% if announcement.priority.value == 'urgent' %}danger{% elif announcement.priority.value == 'high' %}warning{% else %}secondary{% endif %}">
+                            <span class="badge bg-{% if announcement.priority.value == 'urgent' %}danger{% elif announcement.priority.value == 'high' %}warning{% else %}secondary{% endif %} px-3 py-2">
                                 {{ announcement.get_priority_display() }}
                             </span>
                         </div>
-                        <small class="text-muted">{{ announcement.created_at.strftime('%d %B %Y') }}</small>
+                        <div class="text-end">
+                            <small class="text-muted d-block">{{ announcement.created_at.strftime('%d %B %Y') }}</small>
+                            <small class="text-muted">{{ announcement.created_at.strftime('%H:%M') }}</small>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{ announcement.title }}</h5>
-                        <div class="card-text">
+                    <div class="card-body p-4">
+                        <h4 class="card-title text-primary mb-3">{{ announcement.title }}</h4>
+                        <div class="card-text mb-4">
                             {{ announcement.content | replace('\n', '<br>') | safe }}
                         </div>
                         
-                        {% if announcement.areas_affected %}
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                <i class="fas fa-map-marker-alt me-1"></i>
-                                <strong>Areas Affected:</strong> {{ announcement.areas_affected | join(', ') }}
-                            </small>
-                        </div>
-                        {% endif %}
-                        
-                        {% if announcement.contact_info %}
-                        <div class="mt-2">
-                            <small class="text-muted">
-                                <i class="fas fa-phone me-1"></i>
-                                <strong>Contact:</strong> {{ announcement.contact_info }}
-                            </small>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="mt-3 d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted">
-                                    <i class="fas fa-building me-1"></i>{{ announcement.municipality }}
-                                    {% if announcement.author %}
-                                    • <i class="fas fa-user me-1"></i>{{ announcement.author }}
-                                    {% endif %}
-                                </small>
-                            </div>
-                            {% if announcement.expires_at %}
-                            <div>
-                                <small class="text-{% if announcement.expires_at < moment().add(days=1) %}danger{% else %}muted{% endif %}">
-                                    <i class="fas fa-clock me-1"></i>
-                                    Expires: {{ announcement.expires_at.strftime('%d %b %Y') }}
-                                </small>
+                        <!-- Information Row -->
+                        <div class="row g-3 mb-3">
+                            {% if announcement.areas_affected %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-map-marker-alt text-danger me-2 mt-1"></i>
+                                    <div>
+                                        <strong class="text-dark d-block">Areas Affected:</strong>
+                                        <span class="text-muted">{{ announcement.areas_affected | join(', ') }}</span>
+                                    </div>
+                                </div>
                             </div>
                             {% endif %}
+                            
+                            {% if announcement.contact_info %}
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-phone text-primary me-2 mt-1"></i>
+                                    <div>
+                                        <strong class="text-dark d-block">Contact Information:</strong>
+                                        <span class="text-muted">{{ announcement.contact_info }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Footer Information -->
+                        <div class="border-top pt-3 mt-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-dark border me-2">
+                                        <i class="fas fa-building me-1"></i>{{ announcement.municipality }}
+                                    </span>
+                                    {% if announcement.author %}
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="fas fa-user me-1"></i>{{ announcement.author }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                {% if announcement.expires_at %}
+                                <div>
+                                    <small class="text-{% if announcement.expires_at < moment().add(days=1) %}danger{% else %}muted{% endif %}">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Expires: {{ announcement.expires_at.strftime('%d %b %Y') }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="card">
+                <div class="card shadow-sm">
                     <div class="card-body text-center py-5">
-                        <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
-                        <h5>No announcements available</h5>
-                        <p class="text-muted">
+                        <i class="fas fa-bullhorn fa-4x text-muted mb-4"></i>
+                        <h4 class="text-primary mb-3">No announcements available</h4>
+                        <p class="text-muted mb-4">
                             {% if selected_municipality %}
-                            No announcements found for {{ selected_municipality }}.
+                            No announcements found for <strong>{{ selected_municipality }}</strong>.
                             {% else %}
                             There are currently no active announcements.
                             {% endif %}
                         </p>
-                        <a href="{{ url_for('portal.index') }}" class="btn btn-primary">
-                            Return to Homepage
-                        </a>
+                        <div class="d-flex gap-2 justify-content-center flex-wrap">
+                            <a href="{{ url_for('portal.index') }}" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>Return to Homepage
+                            </a>
+                            {% if selected_municipality %}
+                            <a href="{{ url_for('portal.announcements') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>Show All Announcements
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             {% endif %}
@@ -119,21 +155,21 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Quick Actions -->
-            <div class="card mb-4">
-                <div class="card-header">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
                         <i class="fas fa-bolt me-2"></i>Quick Actions
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-primary btn-sm">
+                        <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-danger">
                             <i class="fas fa-exclamation-triangle me-2"></i>Lodge Complaint
                         </a>
-                        <a href="{{ url_for('portal.complaint_status') }}" class="btn btn-outline-primary btn-sm">
+                        <a href="{{ url_for('portal.complaint_status') }}" class="btn btn-outline-primary">
                             <i class="fas fa-search me-2"></i>Check Status
                         </a>
-                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger btn-sm">
+                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-outline-danger">
                             <i class="fas fa-ambulance me-2"></i>Emergency Services
                         </a>
                     </div>
@@ -141,29 +177,37 @@
             </div>
             
             <!-- Emergency Numbers -->
-            <div class="card mb-4">
+            <div class="card mb-4 shadow-sm">
                 <div class="card-header bg-danger text-white">
                     <h6 class="mb-0">
                         <i class="fas fa-phone me-2"></i>Emergency Numbers
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="mb-2">
-                        <strong>Police:</strong>
-                        <a href="tel:10111" class="text-decoration-none float-end">10111</a>
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                            <strong>Police</strong>
+                        </div>
+                        <a href="tel:10111" class="btn btn-sm btn-outline-primary">10111</a>
                     </div>
-                    <div class="mb-2">
-                        <strong>Ambulance:</strong>
-                        <a href="tel:10177" class="text-decoration-none float-end">10177</a>
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-ambulance text-danger me-2"></i>
+                            <strong>Ambulance</strong>
+                        </div>
+                        <a href="tel:10177" class="btn btn-sm btn-outline-danger">10177</a>
                     </div>
-                    <div class="mb-2">
-                        <strong>Fire:</strong>
-                        <a href="tel:10177" class="text-decoration-none float-end">10177</a>
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-fire-extinguisher text-warning me-2"></i>
+                            <strong>Fire Services</strong>
+                        </div>
+                        <a href="tel:10177" class="btn btn-sm btn-outline-warning">10177</a>
                     </div>
-                    <hr>
-                    <div class="text-center">
-                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger btn-sm">
-                            More Emergency Info
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger">
+                            <i class="fas fa-info-circle me-2"></i>More Emergency Info
                         </a>
                     </div>
                 </div>
@@ -220,23 +264,44 @@
     </div>
 </div>
 
+{% block extra_css %}
 <style>
 .announcement-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+    border: 1px solid var(--gov-border);
+    border-left: 4px solid var(--gov-secondary);
 }
 
 .announcement-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.announcement-card .card-header .badge:first-child {
-    border-left-color: var(--bs-primary);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    border-left-color: var(--gov-primary);
 }
 
 .service-category-list {
     font-size: 0.9rem;
 }
+
+.service-category-list .d-flex {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gov-border);
+}
+
+.service-category-list .d-flex:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .announcement-card .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.5rem;
+    }
+    
+    .announcement-card .card-header .text-end {
+        text-align: left !important;
+    }
+}
 </style>
+{% endblock %}
 {% endblock %}

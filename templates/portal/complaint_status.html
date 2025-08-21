@@ -1,84 +1,115 @@
 {% extends "portal/base.html" %}
 
-{% block title %}Check Complaint Status - Muni-Info{% endblock %}
+{% block title %}Check Complaint Status - Government Portal{% endblock %}
 
 {% block content %}
 <div class="container py-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="h2 text-primary mb-2">Check Complaint Status</h1>
+        <p class="text-muted">Track the progress of your submitted complaints</p>
+    </div>
+    
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
-                        <i class="fas fa-search me-2"></i>Check Complaint Status
+                        <i class="fas fa-search me-2"></i>Complaint Status Lookup
                     </h4>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     {% if not complaint %}
+                    <div class="mb-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>How to find your reference number:</strong><br>
+                            Check the SMS confirmation you received after submitting your complaint, or look for the reference number displayed on the confirmation page.
+                        </div>
+                    </div>
+                    
                     <form method="GET" action="{{ url_for('portal.complaint_status') }}">
-                        <div class="mb-3">
-                            <label for="reference_id" class="form-label">Complaint Reference Number</label>
-                            <input type="text" class="form-control" id="reference_id" name="reference_id" 
+                        <div class="mb-4">
+                            <label for="reference_id" class="form-label h5">Complaint Reference Number</label>
+                            <input type="text" class="form-control form-control-lg" id="reference_id" name="reference_id" 
                                    value="{{ reference_id or '' }}" placeholder="Enter your reference number (e.g., COMP-2024-001)"
                                    required>
-                            <div class="form-text">Enter the reference number you received when submitting your complaint</div>
+                            <div class="form-text mt-2">Enter the reference number you received when submitting your complaint</div>
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search me-2"></i>Check Status
-                        </button>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-search me-2"></i>Check Status
+                            </button>
+                        </div>
                     </form>
                     {% else %}
                     <div class="complaint-details">
+                        <!-- Status Overview Card -->
+                        <div class="card mb-4 border-left-primary">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h4 class="text-primary mb-1">{{ complaint.reference_id }}</h4>
+                                        <p class="text-muted mb-0">Submitted on {{ complaint.timestamp.strftime('%d %B %Y at %H:%M') }}</p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <span class="badge bg-{% if complaint.status.value == 'resolved' %}success{% elif complaint.status.value == 'in_progress' %}warning{% elif complaint.status.value == 'submitted' %}info{% else %}secondary{% endif %} fs-5 px-3 py-2">
+                                            {{ complaint.get_status_display() }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Complaint Details Grid -->
                         <div class="row mb-4">
-                            <div class="col-md-6">
-                                <h5>Reference Number</h5>
-                                <p class="text-muted">{{ complaint.reference_id }}</p>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-exclamation-circle fa-2x text-primary mb-2"></i>
+                                        <h6 class="card-title">Priority Level</h6>
+                                        <span class="badge bg-{% if complaint.priority.value == 'urgent' %}danger{% elif complaint.priority.value == 'high' %}warning{% elif complaint.priority.value == 'medium' %}primary{% else %}success{% endif %} fs-6">
+                                            {{ complaint.get_priority_display() }}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <h5>Current Status</h5>
-                                <span class="badge bg-{% if complaint.status.value == 'resolved' %}success{% elif complaint.status.value == 'in_progress' %}warning{% elif complaint.status.value == 'submitted' %}info{% else %}secondary{% endif %} fs-6">
-                                    {{ complaint.get_status_display() }}
-                                </span>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-tag fa-2x text-secondary mb-2"></i>
+                                        <h6 class="card-title">Service Type</h6>
+                                        <p class="mb-0">{{ complaint.complaint_type }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-map-marker-alt fa-2x text-info mb-2"></i>
+                                        <h6 class="card-title">Location</h6>
+                                        <p class="mb-0">
+                                            {% if complaint.location_info and complaint.location_info.municipality %}
+                                                {{ complaint.location_info.municipality }}
+                                            {% else %}
+                                                Not specified
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <h5>Priority</h5>
-                                <span class="badge bg-{% if complaint.priority.value == 'urgent' %}danger{% elif complaint.priority.value == 'high' %}warning{% elif complaint.priority.value == 'medium' %}primary{% else %}success{% endif %}">
-                                    {{ complaint.get_priority_display() }}
-                                </span>
-                            </div>
-                            <div class="col-md-6">
-                                <h5>Submitted Date</h5>
-                                <p class="text-muted">{{ complaint.timestamp.strftime('%d %B %Y at %H:%M') }}</p>
-                            </div>
-                        </div>
-                        
+                        <!-- Complaint Description -->
                         <div class="mb-4">
-                            <h5>Complaint Type</h5>
-                            <p class="text-muted">{{ complaint.complaint_type }}</p>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <h5>Description</h5>
-                            <div class="border rounded p-3 bg-light">
-                                {{ complaint.description }}
+                            <h5 class="text-primary"><i class="fas fa-file-alt me-2"></i>Complaint Description</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    {{ complaint.description }}
+                                </div>
                             </div>
                         </div>
                         
-                        {% if complaint.location_info %}
-                        <div class="mb-4">
-                            <h5>Location</h5>
-                            <p class="text-muted">
-                                {% if complaint.location_info.municipality %}
-                                    Municipality: {{ complaint.location_info.municipality }}
-                                {% endif %}
-                                {% if complaint.location_info.province %}
-                                    <br>Province: {{ complaint.location_info.province }}
-                                {% endif %}
-                            </p>
-                        </div>
-                        {% endif %}
                         
                         {% if hasattr(complaint, 'ai_analysis') and complaint.ai_analysis %}
                         <div class="mb-4">
@@ -117,30 +148,41 @@
                         </div>
                         {% endif %}
                         
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>What happens next?</strong><br>
-                            {% if complaint.status.value == 'submitted' %}
-                            Your complaint has been received and will be reviewed by our team within 24 hours.
-                            {% elif complaint.status.value == 'in_progress' %}
-                            Your complaint is being actively worked on. We'll keep you updated on progress.
-                            {% elif complaint.status.value == 'under_review' %}
-                            Your complaint is under review. Additional information may be requested.
-                            {% elif complaint.status.value == 'resolved' %}
-                            Your complaint has been resolved. If you're not satisfied, please contact us.
-                            {% else %}
-                            Your complaint is currently being processed.
-                            {% endif %}
+                        <!-- Next Steps Information -->
+                        <div class="alert {% if complaint.status.value == 'resolved' %}alert-success{% else %}alert-info{% endif %}">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-{% if complaint.status.value == 'resolved' %}check-circle{% else %}info-circle{% endif %} me-3 mt-1"></i>
+                                <div>
+                                    <h6 class="alert-heading">What happens next?</h6>
+                                    {% if complaint.status.value == 'submitted' %}
+                                    Your complaint has been received and will be reviewed by our team within 24 hours. You will receive an SMS update once the review is complete.
+                                    {% elif complaint.status.value == 'in_progress' %}
+                                    Your complaint is being actively worked on by our field team. We'll keep you updated on progress via SMS notifications.
+                                    {% elif complaint.status.value == 'under_review' %}
+                                    Your complaint is under review by our technical team. Additional information may be requested if needed.
+                                    {% elif complaint.status.value == 'resolved' %}
+                                    Your complaint has been successfully resolved! If you're not satisfied with the resolution, please contact our support team.
+                                    {% else %}
+                                    Your complaint is currently being processed by our system.
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="text-center mt-4">
-                        <a href="{{ url_for('portal.complaint_status') }}" class="btn btn-outline-primary me-3">
-                            Check Another Complaint
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+                        <a href="{{ url_for('portal.complaint_status') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Check Another Complaint
                         </a>
                         <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-primary">
-                            Submit New Complaint
+                            <i class="fas fa-plus me-2"></i>Submit New Complaint
                         </a>
+                        {% if complaint.status.value == 'resolved' %}
+                        <a href="{{ url_for('portal.rate_service') }}" class="btn btn-success">
+                            <i class="fas fa-star me-2"></i>Rate This Service
+                        </a>
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
@@ -149,7 +191,12 @@
     </div>
 </div>
 
+{% block extra_css %}
 <style>
+.border-left-primary {
+    border-left: 4px solid var(--gov-primary) !important;
+}
+
 .timeline {
     position: relative;
     padding-left: 2rem;
@@ -158,18 +205,23 @@
 .timeline-item {
     position: relative;
     margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--gov-white);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .timeline-marker {
     position: absolute;
     left: -2rem;
-    top: 0.5rem;
+    top: 1.5rem;
     width: 12px;
     height: 12px;
-    background: var(--bs-primary);
+    background: var(--gov-primary);
     border-radius: 50%;
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 3px var(--bs-primary);
+    border: 3px solid var(--gov-white);
+    box-shadow: 0 0 0 3px var(--gov-primary);
+    z-index: 2;
 }
 
 .timeline::before {
@@ -179,7 +231,14 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: var(--bs-border-color);
+    background: var(--gov-border);
+    z-index: 1;
+}
+
+.timeline-content h6 {
+    color: var(--gov-primary);
+    font-weight: 600;
 }
 </style>
+{% endblock %}
 {% endblock %}
