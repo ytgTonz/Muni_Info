@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "user_id": "1755696806496376",
+      "username": "admin",
+      "email": "admin@muniinfo.gov.za",
+      "phone_number": "+27123456789",
+      "full_name": "System Administrator",
+      "role": "admin",
+      "municipality": "System",
+      "department": "IT",
+      "is_active": true,
+      "created_at": "2025-08-20T15:33:26.496350",
+      "last_login": "2025-08-21T08:21:30.988322",
+      "password_hash": "scrypt:32768:8:1$TQnHwHzmkmCu8YjD$92736088ed6476e402c574fe7dfc7fef872f4860e1f43d43262412065e273524a3e069e07ecc8ecb9dc1fc803b02f137dbff0cc06f211aaa047a0d71df09bb15"
+    }
+  ]
+}

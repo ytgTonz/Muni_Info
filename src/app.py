@@ -8,7 +8,13 @@ from src.portal.views import portal_bp
 from src.services.user_service import user_service
 
 def create_app():
-    app = Flask(__name__)
+    import os
+    # Get the parent directory (root of the project)
+    basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    
+    app = Flask(__name__, 
+                template_folder=os.path.join(basedir, 'templates'),
+                static_folder=os.path.join(basedir, 'static'))
     app.config.from_object(Config)
     app.secret_key = Config.SECRET_KEY if hasattr(Config, 'SECRET_KEY') else 'dev-secret-key-change-in-production'
     
@@ -31,7 +37,8 @@ def create_app():
     @app.route('/')
     @app.route('/index')
     def index():
-        return portal_bp.index()
+        from flask import redirect, url_for
+        return redirect(url_for('portal.index'))
     
     return app
 

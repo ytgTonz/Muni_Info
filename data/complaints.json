@@ -1,0 +1,18 @@
+{
+  "complaints": [
+    {
+      "reference_id": "MI-2025-277494",
+      "sender": "+27123456789",
+      "complaint_type": "Water",
+      "description": "No water supply since yesterday",
+      "status": "in_progress",
+      "priority": "high",
+      "timestamp": "2025-08-21T08:09:42.709529",
+      "updated_at": "2025-08-21T08:22:00.237682",
+      "image_urls": [],
+      "assigned_to": null,
+      "resolution_notes": "Status updated to in_progress by System Administrator",
+      "location_info": null
+    }
+  ]
+}
