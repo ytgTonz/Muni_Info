@@ -11,6 +11,10 @@ class Config:
     DEBUG = FLASK_ENV == "development"
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
     
+    # MongoDB Configuration
+    MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb+srv://hamzaMaq:hamza_78674@cluster0.iewu6.mongodb.net/")
+    MONGODB_DB_NAME = os.environ.get("MONGODB_DB_NAME", "muni_info_db")
+    
     # Google Maps API (optional - for enhanced geocoding)
     GOOGLE_MAPS_API_KEY = os.environ.get("GOOGLE_MAPS_API_KEY")
     

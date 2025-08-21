@@ -47,6 +47,16 @@ class User(UserMixin):
     def can_manage_users(self) -> bool:
         return self.role in [UserRole.ADMIN, UserRole.SUPERVISOR]
     
+    def get_role_display(self) -> str:
+        """Get a human-readable role name"""
+        role_names = {
+            UserRole.ADMIN: "Administrator",
+            UserRole.MUNICIPAL_STAFF: "Municipal Staff",
+            UserRole.SUPERVISOR: "Supervisor",
+            UserRole.CITIZEN: "Citizen"
+        }
+        return role_names.get(self.role, self.role.value.title())
+    
     def to_dict(self):
         return {
             "user_id": self.user_id,

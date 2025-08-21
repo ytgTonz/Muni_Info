@@ -355,10 +355,18 @@
                             <strong>{{ current_user.full_name }}</strong>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.profile') }}">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a></li>
+                            {% if current_user.can_manage_users() %}
+                            <li><a class="dropdown-item" href="{{ url_for('admin.settings') }}">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">Sign out</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign out
+                            </a></li>
                         </ul>
                     </div>
                 </div>

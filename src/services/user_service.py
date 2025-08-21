@@ -141,6 +141,21 @@ class UserRepository:
             self.save_user(user)
             return True
         return False
+    
+    def update_user(self, user: User) -> User:
+        """Update an existing user"""
+        return self.save_user(user)
+    
+    def delete_user(self, user_id: str) -> bool:
+        """Delete a user by ID"""
+        users = self._load_users()
+        original_count = len(users)
+        users = [u for u in users if u["user_id"] != user_id]
+        
+        if len(users) < original_count:
+            self._save_users(users)
+            return True
+        return False
 
 class UserService:
     def __init__(self):
@@ -178,6 +193,31 @@ class UserService:
             username=username,
             email=email,
             phone_number=phone_number,
+            full_name=full_name,
+            role=role,
+            municipality=municipality,
+            department=department
+        )
+        user.set_password(password)
+        
+        return self.repository.save_user(user)
+    
+    def create_admin_user(self, username: str, full_name: str, email: str, 
+                         password: str, role: UserRole, municipality: str = None, 
+                         department: str = None) -> Optional[User]:
+        """Create a user with admin privileges"""
+        
+        # Check if username or email already exists
+        if self.repository.get_user_by_username(username):
+            raise ValueError("Username already exists")
+        
+        if email and self.repository.get_user_by_email(email):
+            raise ValueError("Email already exists")
+        
+        user = User(
+            username=username,
+            email=email or f"{username}@municipality.gov.za",
+            phone_number="",  # Will be updated by admin
             full_name=full_name,
             role=role,
             municipality=municipality,

@@ -184,8 +184,48 @@ def users():
         flash('Access denied. Insufficient privileges.', 'error')
         return redirect(url_for('admin.dashboard'))
     
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('search', '')
+    role_filter = request.args.get('role')
+    
     all_users = user_service.repository.get_all_users()
-    return render_template('admin/users.html', users=all_users)
+    
+    # Apply search filter
+    if search:
+        all_users = [u for u in all_users if 
+                    search.lower() in u.full_name.lower() or 
+                    search.lower() in u.username.lower() or 
+                    search.lower() in (u.email or '').lower()]
+    
+    # Apply role filter
+    if role_filter and role_filter != 'all':
+        all_users = [u for u in all_users if u.role.value == role_filter]
+    
+    # Pagination
+    per_page = 15
+    total = len(all_users)
+    start = (page - 1) * per_page
+    end = start + per_page
+    users_page = all_users[start:end]
+    
+    pagination = {
+        'page': page,
+        'per_page': per_page,
+        'total': total,
+        'pages': (total + per_page - 1) // per_page,
+        'has_prev': page > 1,
+        'has_next': page * per_page < total,
+        'prev_num': page - 1 if page > 1 else None,
+        'next_num': page + 1 if page * per_page < total else None
+    }
+    
+    return render_template('admin/users.html', 
+                         users=users_page,
+                         all_users=all_users,
+                         pagination=pagination,
+                         search=search,
+                         role_filter=role_filter,
+                         user_roles=UserRole)
 
 @admin_bp.route('/analytics')
 @login_required
@@ -248,6 +288,277 @@ def api_recent_complaints():
         })
     
     return jsonify(complaint_data)
+
+# User management routes
+@admin_bp.route('/users/create', methods=['POST'])
+@login_required
+@require_dashboard_access
+def create_user():
+    if not current_user.can_manage_users():
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['username', 'full_name', 'email', 'password', 'role']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+        
+        # Check if username already exists
+        if user_service.repository.get_user_by_username(data['username']):
+            return jsonify({'error': 'Username already exists'}), 400
+        
+        # Check if email already exists
+        if data['email'] and user_service.repository.get_user_by_email(data['email']):
+            return jsonify({'error': 'Email already exists'}), 400
+        
+        # Create user
+        user = user_service.create_admin_user(
+            username=data['username'],
+            full_name=data['full_name'],
+            email=data['email'],
+            password=data['password'],
+            role=UserRole(data['role']),
+            municipality=data.get('municipality'),
+            department=data.get('department')
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': f'User {user.username} created successfully',
+            'user': user.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/users/<user_id>', methods=['GET'])
+@login_required
+@require_dashboard_access
+def get_user(user_id):
+    if not current_user.can_manage_users():
+        return jsonify({'error': 'Access denied'}), 403
+    
+    user = user_service.repository.get_user_by_id(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    return jsonify(user.to_dict())
+
+@admin_bp.route('/users/<user_id>/update', methods=['POST'])
+@login_required
+@require_dashboard_access
+def update_user(user_id):
+    if not current_user.can_manage_users():
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        user = user_service.repository.get_user_by_id(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        
+        # Update user fields
+        if 'full_name' in data:
+            user.full_name = data['full_name']
+        if 'email' in data:
+            # Check if email already exists for another user
+            existing_user = user_service.repository.get_user_by_email(data['email'])
+            if existing_user and existing_user.user_id != user_id:
+                return jsonify({'error': 'Email already exists'}), 400
+            user.email = data['email']
+        if 'role' in data:
+            user.role = UserRole(data['role'])
+        if 'municipality' in data:
+            user.municipality = data['municipality']
+        if 'department' in data:
+            user.department = data['department']
+        if 'is_active' in data:
+            user.is_active = data['is_active']
+        
+        # Update password if provided
+        if data.get('password'):
+            user.set_password(data['password'])
+        
+        updated_user = user_service.repository.update_user(user)
+        
+        return jsonify({
+            'success': True,
+            'message': f'User {user.username} updated successfully',
+            'user': updated_user.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/users/<user_id>/toggle-status', methods=['POST'])
+@login_required
+@require_dashboard_access
+def toggle_user_status(user_id):
+    if not current_user.can_manage_users():
+        return jsonify({'error': 'Access denied'}), 403
+    
+    # Prevent users from deactivating themselves
+    if user_id == current_user.user_id:
+        return jsonify({'error': 'Cannot deactivate your own account'}), 400
+    
+    try:
+        user = user_service.repository.get_user_by_id(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        user.is_active = not user.is_active
+        updated_user = user_service.repository.update_user(user)
+        
+        status = 'activated' if user.is_active else 'deactivated'
+        return jsonify({
+            'success': True,
+            'message': f'User {user.username} {status} successfully',
+            'is_active': user.is_active
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/users/<user_id>/delete', methods=['DELETE'])
+@login_required
+@require_dashboard_access
+def delete_user(user_id):
+    if not current_user.can_manage_users():
+        return jsonify({'error': 'Access denied'}), 403
+    
+    # Prevent users from deleting themselves
+    if user_id == current_user.user_id:
+        return jsonify({'error': 'Cannot delete your own account'}), 400
+    
+    try:
+        user = user_service.repository.get_user_by_id(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        success = user_service.repository.delete_user(user_id)
+        if success:
+            return jsonify({
+                'success': True,
+                'message': f'User {user.username} deleted successfully'
+            })
+        else:
+            return jsonify({'error': 'Failed to delete user'}), 500
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Profile and Settings routes
+@admin_bp.route('/profile')
+@login_required
+def profile():
+    return render_template('admin/profile.html', user=current_user)
+
+@admin_bp.route('/profile/update', methods=['POST'])
+@login_required
+def update_profile():
+    try:
+        data = request.get_json()
+        
+        # Update current user's profile
+        if 'full_name' in data:
+            current_user.full_name = data['full_name']
+        if 'email' in data:
+            # Check if email already exists for another user
+            existing_user = user_service.repository.get_user_by_email(data['email'])
+            if existing_user and existing_user.user_id != current_user.user_id:
+                return jsonify({'error': 'Email already exists'}), 400
+            current_user.email = data['email']
+        if 'phone_number' in data:
+            current_user.phone_number = data['phone_number']
+        
+        updated_user = user_service.repository.update_user(current_user)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Profile updated successfully',
+            'user': updated_user.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/profile/change-password', methods=['POST'])
+@login_required
+def change_password():
+    try:
+        data = request.get_json()
+        
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+        
+        # Validate input
+        if not all([current_password, new_password, confirm_password]):
+            return jsonify({'error': 'All password fields are required'}), 400
+        
+        if new_password != confirm_password:
+            return jsonify({'error': 'New passwords do not match'}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+        
+        # Verify current password
+        if not current_user.check_password(current_password):
+            return jsonify({'error': 'Current password is incorrect'}), 400
+        
+        # Update password
+        current_user.set_password(new_password)
+        user_service.repository.update_user(current_user)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Password changed successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/settings')
+@login_required
+@require_dashboard_access
+def settings():
+    if not current_user.can_manage_users():
+        flash('Access denied. Insufficient privileges.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    
+    # Get system settings/statistics
+    system_stats = {
+        'total_users': len(user_service.repository.get_all_users()),
+        'total_complaints': complaint_service.repository.get_statistics()['total'],
+        'active_users': len([u for u in user_service.repository.get_all_users() if u.is_active]),
+        'system_uptime': 'Available in production'
+    }
+    
+    return render_template('admin/settings.html', system_stats=system_stats)
+
+@admin_bp.route('/settings/system', methods=['POST'])
+@login_required
+@require_dashboard_access
+def update_system_settings():
+    if not current_user.can_manage_users():
+        return jsonify({'error': 'Access denied'}), 403
+    
+    try:
+        data = request.get_json()
+        
+        # In a real implementation, you would update system configuration
+        # For now, just acknowledge the request
+        return jsonify({
+            'success': True,
+            'message': 'System settings updated successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def _get_status_color(status: ComplaintStatus) -> str:
     colors = {

@@ -1,0 +1,285 @@
+{% extends "base/base.html" %}
+
+{% block title %}My Profile - Muni-Info Admin{% endblock %}
+
+{% block page_title %}My Profile{% endblock %}
+{% block page_description %}Manage your account settings and personal information{% endblock %}
+
+{% block main_content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Profile Information Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>Profile Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" 
+                                   value="{{ user.full_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" 
+                                   value="{{ user.username }}" readonly>
+                            <div class="form-text">Username cannot be changed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ user.email or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   value="{{ user.phone_number or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <input type="text" class="form-control" id="role" 
+                                   value="{{ user.role.value.title() }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="municipality" class="form-label">Municipality</label>
+                            <input type="text" class="form-control" id="municipality" 
+                                   value="{{ user.municipality or 'N/A' }}" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="department" class="form-label">Department</label>
+                        <input type="text" class="form-control" id="department" 
+                               value="{{ user.department or 'N/A' }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Role, Municipality, and Department can only be changed by administrators.
+                        </small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Change Password Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lock me-2"></i>Change Password
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="passwordForm">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" 
+                               name="current_password" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="new_password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="new_password" 
+                                   name="new_password" required minlength="6">
+                            <div class="form-text">Minimum 6 characters</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_password" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm_password" 
+                                   name="confirm_password" required minlength="6">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Account Status Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Account Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge bg-{{ 'success' if user.is_active else 'danger' }} fs-6">
+                        {% if user.is_active %}
+                            <i class="fas fa-check-circle me-1"></i>Active Account
+                        {% else %}
+                            <i class="fas fa-times-circle me-1"></i>Inactive Account
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Account Created:</strong><br>
+                    <small class="text-muted">{{ user.created_at.strftime('%d %B %Y at %I:%M %p') }}</small>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Last Login:</strong><br>
+                    <small class="text-muted">
+                        {% if user.last_login %}
+                            {{ user.last_login.strftime('%d %B %Y at %I:%M %p') }}
+                        {% else %}
+                            Never
+                        {% endif %}
+                    </small>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>User ID:</strong><br>
+                    <small class="text-muted font-monospace">{{ user.user_id }}</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                    
+                    {% if current_user.can_manage_complaints() %}
+                    <a href="{{ url_for('admin.complaints') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Manage Complaints
+                    </a>
+                    {% endif %}
+                    
+                    {% if current_user.can_manage_users() %}
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-info">
+                        <i class="fas fa-users me-2"></i>Manage Users
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('admin.logout') }}" class="btn btn-outline-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Profile form submission
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    
+    fetch('{{ url_for("admin.update_profile") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showAlert('success', result.message);
+            // Update any displayed information if needed
+        } else {
+            showAlert('danger', result.error || 'An error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while updating your profile');
+    });
+});
+
+// Password form submission
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    
+    // Client-side validation
+    if (data.new_password !== data.confirm_password) {
+        showAlert('danger', 'New passwords do not match');
+        return;
+    }
+    
+    fetch('{{ url_for("admin.change_password") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            showAlert('success', result.message);
+            // Clear the form
+            this.reset();
+        } else {
+            showAlert('danger', result.error || 'An error occurred');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while changing your password');
+    });
+});
+
+function showAlert(type, message) {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create new alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at the top of the main content
+    const mainContent = document.querySelector('main .page-header');
+    mainContent.insertAdjacentElement('afterend', alertDiv);
+}
+</script>
+{% endblock %}

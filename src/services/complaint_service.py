@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional
 from src.models.complaint import Complaint, ComplaintStatus, ComplaintPriority
-from src.services.complaint_repository import complaint_repository
+from src.services.mongodb_complaint_repository import mongodb_complaint_repository
 from src.services.ai_service import ai_service
 from src.utils.geo_utils import load_emergency_services
 
@@ -21,7 +21,7 @@ class ComplaintService:
     }
     
     def __init__(self):
-        self.repository = complaint_repository
+        self.repository = mongodb_complaint_repository
     
     def get_complaint_menu(self) -> str:
         menu = "🎯 *Complaint Categories*\n\n"

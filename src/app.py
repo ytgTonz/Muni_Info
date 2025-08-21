@@ -7,6 +7,7 @@ from src.api.v1.routes import api_v1
 from src.portal.views import portal_bp
 from src.services.user_service import user_service
 from src.services.ussd_service import ussd_service
+from src.services.database_service import db_service
 
 def create_app():
     import os
