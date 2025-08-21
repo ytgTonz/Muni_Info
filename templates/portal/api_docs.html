@@ -1,0 +1,483 @@
+{% extends "portal/base.html" %}
+
+{% block title %}API Documentation - Muni-Info{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="text-center">
+                <h1 class="display-5">API Documentation</h1>
+                <p class="lead text-muted">Integrate with Muni-Info services using our RESTful API</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Start -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rocket me-2"></i>Quick Start
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6>Base URL</h6>
+                            <code class="bg-light p-2 d-block rounded mb-3">https://your-domain.com/api/v1</code>
+                            
+                            <h6>Authentication</h6>
+                            <p class="text-muted">Include your API key in the request headers:</p>
+                            <pre class="bg-light p-3 rounded"><code>X-API-Key: your-api-key-here</code></pre>
+                        </div>
+                        <div class="col-lg-6">
+                            <h6>Example Request</h6>
+                            <pre class="bg-dark text-light p-3 rounded"><code>curl -X GET \
+  https://your-domain.com/api/v1/complaints \
+  -H "X-API-Key: demo-api-key" \
+  -H "Content-Type: application/json"</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Core Endpoints -->
+    <div class="row mb-5">
+        <div class="col">
+            <h2 class="mb-4">Core Endpoints</h2>
+            
+            <!-- Complaints API -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Complaints API
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="api-endpoint mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">GET</span>
+                            <code>/api/v1/complaints</code>
+                        </div>
+                        <p class="text-muted">List all complaints with optional filtering and pagination</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Parameters</h6>
+                                <ul class="list-unstyled">
+                                    <li><code>page</code> - Page number (default: 1)</li>
+                                    <li><code>per_page</code> - Items per page (max: 100)</li>
+                                    <li><code>status</code> - Filter by status</li>
+                                    <li><code>priority</code> - Filter by priority</li>
+                                    <li><code>municipality</code> - Filter by municipality</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Response</h6>
+                                <pre class="bg-light p-2 small"><code>{
+  "items": [...],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total": 100,
+    "pages": 5
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">POST</span>
+                            <code>/api/v1/complaints</code>
+                        </div>
+                        <p class="text-muted">Create a new complaint</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Required Fields</h6>
+                                <ul class="list-unstyled">
+                                    <li><code>sender</code> - Phone number or email</li>
+                                    <li><code>complaint_type</code> - Category of complaint</li>
+                                    <li><code>description</code> - Detailed description</li>
+                                </ul>
+                                <h6>Optional Fields</h6>
+                                <ul class="list-unstyled">
+                                    <li><code>priority</code> - urgent, high, medium, low</li>
+                                    <li><code>location_info</code> - Location details object</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Example Request</h6>
+                                <pre class="bg-light p-2 small"><code>{
+  "sender": "+27123456789",
+  "complaint_type": "Water",
+  "description": "No water supply for 3 days",
+  "priority": "high",
+  "location_info": {
+    "municipality": "City of Cape Town"
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-info me-2">GET</span>
+                            <code>/api/v1/complaints/{reference_id}</code>
+                        </div>
+                        <p class="text-muted">Get a specific complaint by reference ID</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Path Parameters</h6>
+                                <ul class="list-unstyled">
+                                    <li><code>reference_id</code> - Unique complaint reference</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Response</h6>
+                                <pre class="bg-light p-2 small"><code>{
+  "reference_id": "COMP-2024-001",
+  "status": "in_progress",
+  "complaint_type": "Water",
+  "description": "...",
+  "timestamp": "2024-01-01T10:00:00Z",
+  "ai_analysis": {...}
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Analytics API -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Analytics API
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="api-endpoint mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">GET</span>
+                            <code>/api/v1/analytics/dashboard</code>
+                        </div>
+                        <p class="text-muted">Get comprehensive analytics dashboard data</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Parameters</h6>
+                                <ul class="list-unstyled">
+                                    <li><code>days</code> - Analysis period in days (default: 30)</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Response Includes</h6>
+                                <ul class="list-unstyled">
+                                    <li>• Overview metrics</li>
+                                    <li>• Trend analysis</li>
+                                    <li>• Predictions</li>
+                                    <li>• Insights and recommendations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-info me-2">GET</span>
+                            <code>/api/v1/ai/trends</code>
+                        </div>
+                        <p class="text-muted">Get AI-powered trend analysis of recent complaints</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monitoring API -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-heartbeat me-2"></i>Monitoring API
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="api-endpoint mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">GET</span>
+                            <code>/api/v1/monitoring/health</code>
+                        </div>
+                        <p class="text-muted">Get system health status for all components</p>
+                    </div>
+                    
+                    <div class="api-endpoint mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-info me-2">GET</span>
+                            <code>/api/v1/monitoring/metrics</code>
+                        </div>
+                        <p class="text-muted">Get real-time performance metrics</p>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-warning me-2">GET</span>
+                            <code>/api/v1/monitoring/alerts</code>
+                        </div>
+                        <p class="text-muted">Get active system alerts and warnings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Response Codes -->
+    <div class="row mb-5">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-code me-2"></i>HTTP Status Codes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="status-code mb-2">
+                        <span class="badge bg-success me-2">200</span>
+                        <strong>OK</strong> - Request successful
+                    </div>
+                    <div class="status-code mb-2">
+                        <span class="badge bg-success me-2">201</span>
+                        <strong>Created</strong> - Resource created successfully
+                    </div>
+                    <div class="status-code mb-2">
+                        <span class="badge bg-warning me-2">400</span>
+                        <strong>Bad Request</strong> - Invalid request data
+                    </div>
+                    <div class="status-code mb-2">
+                        <span class="badge bg-danger me-2">401</span>
+                        <strong>Unauthorized</strong> - Invalid or missing API key
+                    </div>
+                    <div class="status-code mb-2">
+                        <span class="badge bg-warning me-2">404</span>
+                        <strong>Not Found</strong> - Resource not found
+                    </div>
+                    <div class="status-code">
+                        <span class="badge bg-danger me-2">500</span>
+                        <strong>Server Error</strong> - Internal server error
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Error Response Format
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">All error responses follow this format:</p>
+                    <pre class="bg-light p-3 rounded"><code>{
+  "error": "Error message description",
+  "code": "ERROR_CODE",
+  "timestamp": "2024-01-01T10:00:00Z",
+  "request_id": "req_123456789"
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SDKs and Libraries -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-download me-2"></i>SDKs and Code Examples
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <h6><i class="fab fa-js-square text-warning me-2"></i>JavaScript</h6>
+                            <pre class="bg-light p-3 rounded"><code>// Using fetch API
+fetch('/api/v1/complaints', {
+  method: 'GET',
+  headers: {
+    'X-API-Key': 'your-key',
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));</code></pre>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <h6><i class="fab fa-python text-primary me-2"></i>Python</h6>
+                            <pre class="bg-light p-3 rounded"><code>import requests
+
+headers = {
+    'X-API-Key': 'your-key',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get(
+    '/api/v1/complaints',
+    headers=headers
+)
+data = response.json()</code></pre>
+                        </div>
+                        <div class="col-lg-4 mb-4">
+                            <h6><i class="fab fa-php text-info me-2"></i>PHP</h6>
+                            <pre class="bg-light p-3 rounded"><code>$headers = [
+    'X-API-Key: your-key',
+    'Content-Type: application/json'
+];
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, '/api/v1/complaints');
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Webhooks -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-webhook me-2"></i>Webhooks
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Receive real-time notifications about complaint updates</p>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6>Webhook Events</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-dot-circle text-primary me-2"></i>complaint.created</li>
+                                <li><i class="fas fa-dot-circle text-warning me-2"></i>complaint.status_changed</li>
+                                <li><i class="fas fa-dot-circle text-success me-2"></i>complaint.resolved</li>
+                                <li><i class="fas fa-dot-circle text-info me-2"></i>complaint.rated</li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6">
+                            <h6>Webhook Payload Example</h6>
+                            <pre class="bg-light p-3 rounded small"><code>{
+  "event": "complaint.status_changed",
+  "timestamp": "2024-01-01T10:00:00Z",
+  "data": {
+    "reference_id": "COMP-2024-001",
+    "old_status": "submitted",
+    "new_status": "in_progress"
+  }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rate Limits -->
+    <div class="row mb-5">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>Rate Limits
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><strong>General API:</strong> 1000 requests/hour</li>
+                        <li><strong>Complaint Creation:</strong> 100 requests/hour</li>
+                        <li><strong>Analytics:</strong> 50 requests/hour</li>
+                        <li><strong>Monitoring:</strong> 200 requests/hour</li>
+                    </ul>
+                    <p class="text-muted mb-0">Rate limit headers are included in all responses.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-key me-2"></i>API Key Management
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">To get an API key:</p>
+                    <ol>
+                        <li>Contact your municipality's IT department</li>
+                        <li>Provide your application details and use case</li>
+                        <li>Complete the API agreement form</li>
+                        <li>Receive your unique API key via secure email</li>
+                    </ol>
+                    <p class="text-muted mb-0">Keep your API key secure and never share it publicly.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Support -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="mb-3">Need Help?</h3>
+                    <p class="text-muted mb-4">
+                        Our API documentation and support team are here to help you integrate successfully.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="mailto:api-support@muni-info.gov.za" class="btn btn-primary">
+                            <i class="fas fa-envelope me-2"></i>Email Support
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fab fa-github me-2"></i>GitHub Examples
+                        </a>
+                        <a href="{{ url_for('portal.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Back to Portal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.api-endpoint {
+    border-left: 4px solid var(--bs-primary);
+    padding-left: 1rem;
+}
+
+.status-code {
+    display: flex;
+    align-items: center;
+}
+
+pre {
+    font-size: 0.85rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+code {
+    font-size: 0.9rem;
+}
+
+.card-header h5 {
+    font-weight: 600;
+}
+</style>
+{% endblock %}

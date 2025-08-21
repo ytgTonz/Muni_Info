@@ -31,6 +31,7 @@ class Complaint:
     assigned_to: Optional[str] = None
     resolution_notes: Optional[str] = None
     location_info: Optional[dict] = None
+    ai_analysis: Optional[dict] = field(default_factory=dict)  # Phase 3: AI analysis data
     
     def update_status(self, new_status: ComplaintStatus, notes: Optional[str] = None):
         self.status = new_status
@@ -55,7 +56,8 @@ class Complaint:
             "image_urls": self.image_urls,
             "assigned_to": self.assigned_to,
             "resolution_notes": self.resolution_notes,
-            "location_info": self.location_info
+            "location_info": self.location_info,
+            "ai_analysis": self.ai_analysis
         }
     
     def get_status_display(self) -> str:

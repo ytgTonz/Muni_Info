@@ -1,0 +1,396 @@
+{% extends "portal/base.html" %}
+
+{% block title %}About Muni-Info - Municipal Services Portal{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h1 class="display-4 mb-4">About Muni-Info</h1>
+            <p class="lead text-muted">
+                Connecting communities with municipal services through technology
+            </p>
+        </div>
+    </div>
+    
+    <!-- Mission & Vision -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-bullseye fa-3x text-primary"></i>
+                    </div>
+                    <h3 class="text-center mb-3">Our Mission</h3>
+                    <p class="text-muted">
+                        To bridge the gap between citizens and municipalities by providing a 
+                        simple, accessible platform for reporting issues, tracking progress, 
+                        and staying informed about local services.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-eye fa-3x text-success"></i>
+                    </div>
+                    <h3 class="text-center mb-3">Our Vision</h3>
+                    <p class="text-muted">
+                        To create empowered communities where every citizen has a voice and 
+                        every municipal service issue is addressed efficiently and transparently 
+                        through innovative technology solutions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Key Features -->
+    <div class="row mb-5">
+        <div class="col">
+            <h2 class="text-center mb-4">Key Features</h2>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                        <h5>Multi-Platform Access</h5>
+                        <p class="text-muted">Web portal, WhatsApp, USSD for feature phones - choose your preferred method</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-brain fa-3x text-info mb-3"></i>
+                        <h5>AI-Powered</h5>
+                        <p class="text-muted">Smart categorization and priority detection for faster, more accurate routing</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                        <h5>Real-time Tracking</h5>
+                        <p class="text-muted">Track your complaint status and receive updates throughout the resolution process</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-box text-center">
+                        <i class="fas fa-language fa-3x text-warning mb-3"></i>
+                        <h5>Multi-language</h5>
+                        <p class="text-muted">Available in English, Afrikaans, isiZulu, and isiXhosa for broader accessibility</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How It Works -->
+    <div class="row mb-5">
+        <div class="col">
+            <h2 class="text-center mb-4">How It Works</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker">1</div>
+                            <div class="timeline-content">
+                                <h5>Submit Your Complaint</h5>
+                                <p>Use our web portal, WhatsApp, or USSD to report any municipal service issue. Our AI system automatically categorizes and prioritizes your complaint.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker">2</div>
+                            <div class="timeline-content">
+                                <h5>Get Reference Number</h5>
+                                <p>Receive a unique reference number to track your complaint. This allows you to monitor progress and receive updates.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker">3</div>
+                            <div class="timeline-content">
+                                <h5>Smart Routing</h5>
+                                <p>Your complaint is intelligently routed to the appropriate department and assigned to the most suitable staff member.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker">4</div>
+                            <div class="timeline-content">
+                                <h5>Resolution & Feedback</h5>
+                                <p>Track progress, receive updates, and rate the service once resolved. Your feedback helps improve future service delivery.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Technology Stack -->
+    <div class="row mb-5">
+        <div class="col">
+            <h2 class="text-center mb-4">Technology & Innovation</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card tech-card">
+                        <div class="card-body text-center">
+                            <i class="fab fa-python fa-3x text-primary mb-3"></i>
+                            <h5>Modern Backend</h5>
+                            <p class="text-muted">Built with Flask and Python for reliability and scalability</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card tech-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-robot fa-3x text-info mb-3"></i>
+                            <h5>AI Integration</h5>
+                            <p class="text-muted">Machine learning for intelligent complaint processing and routing</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card tech-card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                            <h5>Secure & Private</h5>
+                            <p class="text-muted">End-to-end security with privacy protection and data compliance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Platform Statistics</h2>
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="mb-0">50,000+</h3>
+                                <p class="mb-0">Complaints Processed</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="mb-0">85%</h3>
+                                <p class="mb-0">Resolution Rate</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="mb-0">24/7</h3>
+                                <p class="mb-0">Service Availability</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="mb-0">4.5★</h3>
+                                <p class="mb-0">Average User Rating</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Information -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>Contact Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="contact-item mb-3">
+                        <i class="fas fa-phone text-primary me-3"></i>
+                        <div>
+                            <strong>Call Center</strong><br>
+                            <span class="text-muted">080 MUNI (6864) - Toll Free</span>
+                        </div>
+                    </div>
+                    <div class="contact-item mb-3">
+                        <i class="fas fa-envelope text-success me-3"></i>
+                        <div>
+                            <strong>Email Support</strong><br>
+                            <a href="mailto:help@muni-info.gov.za" class="text-decoration-none">help@muni-info.gov.za</a>
+                        </div>
+                    </div>
+                    <div class="contact-item mb-3">
+                        <i class="fab fa-whatsapp text-success me-3"></i>
+                        <div>
+                            <strong>WhatsApp</strong><br>
+                            <span class="text-muted">+27 XX XXX XXXX</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-mobile-alt text-warning me-3"></i>
+                        <div>
+                            <strong>USSD Code</strong><br>
+                            <span class="text-muted">*120*MUNI# (Feature phones)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Service Hours
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="service-hours mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>Online Services</strong>
+                            <span class="text-success">24/7 Available</span>
+                        </div>
+                        <small class="text-muted">Web portal, WhatsApp, USSD</small>
+                    </div>
+                    <div class="service-hours mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>Call Center</strong>
+                            <span>08:00 - 17:00</span>
+                        </div>
+                        <small class="text-muted">Monday to Friday</small>
+                    </div>
+                    <div class="service-hours mb-3">
+                        <div class="d-flex justify-content-between">
+                            <strong>Weekend Support</strong>
+                            <span>09:00 - 13:00</span>
+                        </div>
+                        <small class="text-muted">Saturday only</small>
+                    </div>
+                    <div class="service-hours">
+                        <div class="d-flex justify-content-between">
+                            <strong>Emergency Services</strong>
+                            <span class="text-danger">24/7 Available</span>
+                        </div>
+                        <small class="text-muted">Urgent municipal issues</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Team & Acknowledgments -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="mb-4">Empowering Communities Through Technology</h3>
+                    <p class="text-muted mb-4">
+                        Muni-Info is developed in partnership with South African municipalities 
+                        to improve service delivery and citizen engagement. We believe that 
+                        technology should serve everyone, which is why we've built a platform 
+                        that works on any device and in multiple languages.
+                    </p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-primary">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Lodge a Complaint
+                        </a>
+                        <a href="{{ url_for('portal.services') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i>View All Services
+                        </a>
+                        <a href="{{ url_for('portal.api_docs') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-code me-2"></i>Developer API
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-box {
+    padding: 2rem 1rem;
+    transition: transform 0.2s;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 3rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1.5rem;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: var(--bs-primary);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -3rem;
+    top: 0;
+    width: 3rem;
+    height: 3rem;
+    background: var(--bs-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 0 0 4px white, 0 0 0 8px var(--bs-primary);
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--bs-primary);
+}
+
+.tech-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tech-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.stat-item {
+    padding: 1rem 0;
+}
+
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.service-hours {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+.service-hours:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+</style>
+{% endblock %}

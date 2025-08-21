@@ -5,13 +5,13 @@
       "sender": "+27123456789",
       "complaint_type": "Water",
       "description": "No water supply since yesterday",
-      "status": "in_progress",
+      "status": "resolved",
       "priority": "high",
       "timestamp": "2025-08-21T08:09:42.709529",
-      "updated_at": "2025-08-21T08:22:00.237682",
+      "updated_at": "2025-08-21T08:32:22.328867",
       "image_urls": [],
       "assigned_to": null,
-      "resolution_notes": "Status updated to in_progress by System Administrator",
+      "resolution_notes": "Status updated to resolved by System Administrator",
       "location_info": null
     }
   ]

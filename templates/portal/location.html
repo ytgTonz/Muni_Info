@@ -1,0 +1,320 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Location Lookup - Muni-Info{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Location Lookup
+                    </h4>
+                    <small>Find your municipality and access local services</small>
+                </div>
+                <div class="card-body">
+                    <!-- Location Input Methods -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-crosshairs fa-3x text-primary mb-3"></i>
+                                    <h5>Use Current Location</h5>
+                                    <p class="text-muted">Allow location access to automatically detect your municipality</p>
+                                    <button class="btn btn-primary" onclick="getCurrentLocation()">
+                                        <i class="fas fa-location-arrow me-2"></i>Get My Location
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <i class="fas fa-edit fa-3x text-success mb-3"></i>
+                                        <h5>Enter Coordinates</h5>
+                                        <p class="text-muted">Enter latitude and longitude manually</p>
+                                    </div>
+                                    <form method="GET" id="coordsForm">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <input type="number" class="form-control" name="lat" placeholder="Latitude" 
+                                                       step="any" value="{{ request.args.get('lat', '') }}">
+                                            </div>
+                                            <div class="col-6">
+                                                <input type="number" class="form-control" name="lon" placeholder="Longitude" 
+                                                       step="any" value="{{ request.args.get('lon', '') }}">
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-success w-100 mt-2">
+                                            <i class="fas fa-search me-2"></i>Lookup
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Result -->
+                    {% if location %}
+                    <div class="alert alert-success">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-check-circle me-2"></i>Location Found!
+                        </h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Municipality:</strong> {{ location.municipality }}</p>
+                                <p><strong>Province:</strong> {{ location.province }}</p>
+                                <p><strong>District:</strong> {{ location.district_municipality }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Coordinates:</strong> {{ "%.4f"|format(location.latitude) }}, {{ "%.4f"|format(location.longitude) }}</p>
+                                <p><strong>Area Type:</strong> {{ location.area_type }}</p>
+                                {% if location.ward_number %}
+                                <p><strong>Ward:</strong> {{ location.ward_number }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions for this Location -->
+                        <div class="mt-3">
+                            <h6>Quick Actions for {{ location.municipality }}:</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ url_for('portal.submit_complaint') }}?municipality={{ location.municipality }}" 
+                                   class="btn btn-primary btn-sm">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Lodge Complaint
+                                </a>
+                                <a href="{{ url_for('portal.announcements') }}?municipality={{ location.municipality }}" 
+                                   class="btn btn-info btn-sm">
+                                    <i class="fas fa-bullhorn me-1"></i>Local Announcements
+                                </a>
+                                <a href="{{ url_for('portal.rate_service') }}?municipality={{ location.municipality }}" 
+                                   class="btn btn-success btn-sm">
+                                    <i class="fas fa-star me-1"></i>Rate Services
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif request.args.get('lat') or request.args.get('lon') %}
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Location Not Found
+                        </h5>
+                        <p>Unable to identify the municipality for the provided coordinates. This could be because:</p>
+                        <ul>
+                            <li>The coordinates are outside South Africa</li>
+                            <li>The coordinates are invalid</li>
+                            <li>The area is not covered by our location database</li>
+                        </ul>
+                        <p class="mb-0">Please try different coordinates or use the manual selection below.</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Manual Municipality Selection -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Manual Municipality Selection
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Can't determine your location automatically? Select your municipality manually:</p>
+                            <div class="row g-3">
+                                <!-- Major Cities -->
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('City of Cape Town')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-mountain fa-2x text-primary mb-2"></i>
+                                            <h6>Cape Town</h6>
+                                            <small class="text-muted">Western Cape</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('City of Johannesburg')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-building fa-2x text-warning mb-2"></i>
+                                            <h6>Johannesburg</h6>
+                                            <small class="text-muted">Gauteng</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('eThekwini')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-water fa-2x text-info mb-2"></i>
+                                            <h6>Durban</h6>
+                                            <small class="text-muted">KwaZulu-Natal</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('City of Tshwane')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-university fa-2x text-success mb-2"></i>
+                                            <h6>Pretoria</h6>
+                                            <small class="text-muted">Gauteng</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('Nelson Mandela Bay')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-ship fa-2x text-primary mb-2"></i>
+                                            <h6>Port Elizabeth</h6>
+                                            <small class="text-muted">Eastern Cape</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('Buffalo City')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-anchor fa-2x text-info mb-2"></i>
+                                            <h6>East London</h6>
+                                            <small class="text-muted">Eastern Cape</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('Mangaung')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-landmark fa-2x text-warning mb-2"></i>
+                                            <h6>Bloemfontein</h6>
+                                            <small class="text-muted">Free State</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <div class="card municipality-card" onclick="selectMunicipality('Other')">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-ellipsis-h fa-2x text-secondary mb-2"></i>
+                                            <h6>Other</h6>
+                                            <small class="text-muted">Select manually</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Information about Location Services -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>About Location Services
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Why do we need your location?</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success me-2"></i>Route complaints to the correct municipality</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Show relevant local announcements</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Provide accurate service information</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Enable emergency service coordination</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Privacy & Security</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-shield-alt text-primary me-2"></i>Location data is not stored</li>
+                                        <li><i class="fas fa-shield-alt text-primary me-2"></i>Used only for service routing</li>
+                                        <li><i class="fas fa-shield-alt text-primary me-2"></i>No tracking or monitoring</li>
+                                        <li><i class="fas fa-shield-alt text-primary me-2"></i>Compliant with privacy laws</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.municipality-card {
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.municipality-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    border-color: var(--bs-primary);
+}
+
+.municipality-card .card-body {
+    padding: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        // Show loading state
+        event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting Location...';
+        event.target.disabled = true;
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                window.location.href = `{{ url_for('portal.location_lookup') }}?lat=${lat}&lon=${lon}`;
+            },
+            function(error) {
+                // Reset button
+                event.target.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Get My Location';
+                event.target.disabled = false;
+                
+                let errorMsg = 'Unable to get your location. ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg += 'Location access was denied. Please enable location services and try again.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg += 'Location information is unavailable. Please try the manual entry option.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg += 'Location request timed out. Please try again.';
+                        break;
+                    default:
+                        errorMsg += 'An unknown error occurred.';
+                        break;
+                }
+                alert(errorMsg);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    } else {
+        alert('Geolocation is not supported by this browser. Please use the manual entry option.');
+    }
+}
+
+function selectMunicipality(municipality) {
+    // You can redirect to services with the municipality pre-selected
+    // or show a modal with municipality-specific actions
+    const actions = [
+        `<a href="{{ url_for('portal.submit_complaint') }}?municipality=${encodeURIComponent(municipality)}" class="btn btn-primary me-2">Lodge Complaint</a>`,
+        `<a href="{{ url_for('portal.announcements') }}?municipality=${encodeURIComponent(municipality)}" class="btn btn-info me-2">View Announcements</a>`,
+        `<a href="{{ url_for('portal.rate_service') }}?municipality=${encodeURIComponent(municipality)}" class="btn btn-success">Rate Services</a>`
+    ].join('');
+    
+    // Show modal or redirect
+    if (confirm(`You selected ${municipality}. Would you like to proceed with services for this municipality?`)) {
+        // For now, redirect to submit complaint page with municipality pre-filled
+        window.location.href = `{{ url_for('portal.submit_complaint') }}?municipality=${encodeURIComponent(municipality)}`;
+    }
+}
+</script>
+{% endblock %}

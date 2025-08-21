@@ -11,50 +11,278 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        /* Government Portal Design System */
+        :root {
+            /* Government Color Palette */
+            --gov-primary: #003366;        
+            --gov-secondary: #004080;      
+            --gov-accent: #0066cc;         
+            --gov-success: #2e7d32;        
+            --gov-warning: #f57c00;        
+            --gov-danger: #d32f2f;         
+            --gov-info: #1976d2;           
+            --gov-light: #f5f5f5;          
+            --gov-dark: #212529;           
+            --gov-border: #dee2e6;         
+            --gov-muted: #6c757d;          
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gov-dark);
+        }
+        
+        /* Government-style navigation */
+        .navbar {
+            background-color: white !important;
+            border-bottom: 3px solid var(--gov-primary);
+            padding: 0.75rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--gov-primary) !important;
+        }
+        
+        .navbar-nav .nav-link {
+            color: var(--gov-dark) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+        
+        .navbar-nav .nav-link:hover,
+        .navbar-nav .nav-link:focus {
+            color: var(--gov-primary) !important;
+            background-color: rgba(0, 51, 102, 0.1);
+            border-radius: 0.25rem;
+        }
+        
+        /* Professional hero section */
         .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: var(--gov-primary);
             color: white;
             padding: 4rem 0;
+            position: relative;
         }
-        .navbar-brand {
-            font-weight: bold;
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><pattern id="grain" x="0" y="0" width="100" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="30" cy="5" r="0.3" fill="rgba(255,255,255,0.03)"/><circle cx="70" cy="15" r="0.4" fill="rgba(255,255,255,0.04)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+        
+        /* Government service cards */
+        .service-card {
+            border: 1px solid var(--gov-border);
+            border-radius: 0.375rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s ease-in-out;
+            background: white;
+        }
+        
+        .service-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-color: var(--gov-accent);
+        }
+        
+        .service-card .card-body {
+            padding: 2rem 1.5rem;
+        }
+        
+        /* Professional statistics section */
+        .stats-section {
+            background-color: var(--gov-light);
+            padding: 3rem 0;
+            border-top: 1px solid var(--gov-border);
+            border-bottom: 1px solid var(--gov-border);
+        }
+        
+        /* Government footer */
+        .footer {
+            background-color: var(--gov-primary);
+            color: white;
+            padding: 3rem 0 1.5rem 0;
+        }
+        
+        .footer h5, .footer h6 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .footer a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer a:hover {
+            color: white;
+        }
+        
+        /* Government button styles */
+        .btn-primary {
+            background-color: var(--gov-primary);
+            border-color: var(--gov-primary);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--gov-secondary);
+            border-color: var(--gov-secondary);
+        }
+        
+        .btn-outline-primary {
+            color: var(--gov-primary);
+            border-color: var(--gov-primary);
+            font-weight: 500;
+        }
+        
+        .btn-outline-primary:hover, .btn-outline-primary:focus {
+            background-color: var(--gov-primary);
+            border-color: var(--gov-primary);
+        }
+        
+        .btn-lg {
+            padding: 0.875rem 2rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Alert styling */
+        .alert {
+            border-left: 4px solid;
+            border-radius: 0.375rem;
+        }
+        
+        .alert-success { border-left-color: var(--gov-success); }
+        .alert-info { border-left-color: var(--gov-info); }
+        .alert-warning { border-left-color: var(--gov-warning); }
+        .alert-danger { border-left-color: var(--gov-danger); }
+        
+        /* Form styling */
+        .form-control:focus {
+            border-color: var(--gov-accent);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+        
+        .form-select:focus {
+            border-color: var(--gov-accent);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+        
+        /* Badge styling */
+        .badge {
+            font-weight: 500;
+        }
+        
+        .bg-primary { background-color: var(--gov-primary) !important; }
+        .bg-success { background-color: var(--gov-success) !important; }
+        .bg-warning { background-color: var(--gov-warning) !important; }
+        .bg-danger { background-color: var(--gov-danger) !important; }
+        .bg-info { background-color: var(--gov-info) !important; }
+        .bg-secondary { background-color: var(--gov-muted) !important; }
+        
+        /* Text colors */
+        .text-primary { color: var(--gov-primary) !important; }
+        .text-success { color: var(--gov-success) !important; }
+        .text-warning { color: var(--gov-warning) !important; }
+        .text-danger { color: var(--gov-danger) !important; }
+        .text-info { color: var(--gov-info) !important; }
+        .text-muted { color: var(--gov-muted) !important; }
+        
+        /* Accessibility improvements */
+        *:focus {
+            outline: 2px solid var(--gov-accent);
+            outline-offset: 2px;
+        }
+        
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--gov-primary);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 0.25rem;
+            z-index: 1000;
+        }
+        
+        .skip-link:focus {
+            top: 6px;
+        }
+        
+        /* Government branding */
+        .gov-seal {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .gov-seal i {
             font-size: 1.5rem;
         }
-        .service-card {
-            transition: transform 0.2s;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        
+        /* Professional card styling */
+        .card {
+            border: 1px solid var(--gov-border);
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .stats-section {
-            background-color: #f8f9fa;
-            padding: 3rem 0;
-        }
-        .footer {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        
+        .card-header {
+            background-color: var(--gov-primary);
             color: white;
-            padding: 2rem 0;
+            border-bottom: 2px solid var(--gov-secondary);
+            font-weight: 600;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
+        
+        /* High contrast support */
+        @media (prefers-contrast: high) {
+            .card {
+                border: 2px solid var(--gov-dark);
+            }
+            
+            .btn {
+                border-width: 2px;
+            }
         }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4c93 100%);
+        
+        /* Print styles */
+        @media print {
+            .navbar,
+            .footer,
+            .btn {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+            }
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Skip link for screen readers -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm" role="navigation" aria-label="Main navigation">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('portal.index') }}">
-                🏛️ Muni-Info
+            <a class="navbar-brand gov-seal" href="{{ url_for('portal.index') }}">
+                <i class="fas fa-landmark" aria-hidden="true"></i>
+                <span>Muni-Info</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -120,14 +348,19 @@
     {% endwith %}
     
     <!-- Main Content -->
-    {% block content %}{% endblock %}
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
     
     <!-- Footer -->
-    <footer class="footer mt-5">
+    <footer class="footer mt-5" role="contentinfo">
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5>🏛️ Muni-Info</h5>
+                    <h5 class="gov-seal">
+                        <i class="fas fa-landmark me-2" aria-hidden="true"></i>
+                        Muni-Info
+                    </h5>
                     <p>Connecting citizens with municipal services across South Africa.</p>
                 </div>
                 <div class="col-md-4">

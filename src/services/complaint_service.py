@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional
 from src.models.complaint import Complaint, ComplaintStatus, ComplaintPriority
 from src.services.complaint_repository import complaint_repository
+from src.services.ai_service import ai_service
 from src.utils.geo_utils import load_emergency_services
 
 class ComplaintService:
@@ -69,8 +70,27 @@ class ComplaintService:
                         priority: Optional[ComplaintPriority] = None,
                         location_info: Optional[dict] = None) -> Complaint:
         
+        # Phase 3: AI-Enhanced Complaint Processing
+        location_str = ""
+        if location_info:
+            location_str = f"{location_info.get('province', '')} {location_info.get('municipality', '')}"
+        
+        # Use AI service for intelligent analysis
+        ai_analysis = ai_service.analyze_complaint(description, location_str, complaint_type)
+        
+        # Override category if AI suggests a better one with high confidence
+        if ai_analysis.confidence > 0.8 and ai_analysis.category != complaint_type:
+            complaint_type = ai_analysis.category
+        
+        # Use AI priority if not manually specified
         if priority is None:
-            priority = self.auto_detect_priority(description)
+            priority_map = {
+                'urgent': ComplaintPriority.URGENT,
+                'high': ComplaintPriority.HIGH,
+                'medium': ComplaintPriority.MEDIUM,
+                'low': ComplaintPriority.LOW
+            }
+            priority = priority_map.get(ai_analysis.priority, ComplaintPriority.MEDIUM)
         
         complaint = Complaint(
             sender=sender,
@@ -79,6 +99,19 @@ class ComplaintService:
             priority=priority,
             location_info=location_info
         )
+        
+        # Store AI analysis results in complaint metadata
+        complaint.ai_analysis = {
+            'category': ai_analysis.category,
+            'category_confidence': ai_analysis.confidence,
+            'detected_priority': ai_analysis.priority,
+            'priority_confidence': ai_analysis.priority_confidence,
+            'department': ai_analysis.department,
+            'keywords': ai_analysis.keywords,
+            'urgency_indicators': ai_analysis.urgency_indicators,
+            'predicted_resolution_time': ai_service.predict_resolution_time(ai_analysis.category, ai_analysis.priority),
+            'suggested_response': ai_analysis.suggested_response
+        }
         
         return self.repository.save_complaint(complaint)
     

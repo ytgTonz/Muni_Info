@@ -1,0 +1,349 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Emergency Services - Muni-Info{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Emergency Header -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <div class="alert alert-danger border-0" style="font-size: 1.2rem;">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                <h2 class="alert-heading">Emergency Services</h2>
+                <p class="mb-0">For life-threatening emergencies, <strong>CALL IMMEDIATELY</strong> - Don't wait!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Primary Emergency Numbers -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+            <div class="card emergency-card border-danger">
+                <div class="card-body text-center">
+                    <div class="emergency-icon mb-3">
+                        <i class="fas fa-shield-alt fa-4x text-primary"></i>
+                    </div>
+                    <h3 class="card-title text-primary">Police</h3>
+                    <div class="emergency-number">
+                        <a href="tel:10111" class="btn btn-primary btn-lg">
+                            <i class="fas fa-phone me-2"></i>10111
+                        </a>
+                    </div>
+                    <p class="text-muted mt-3">Crime, theft, violence, accidents</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card emergency-card border-danger">
+                <div class="card-body text-center">
+                    <div class="emergency-icon mb-3">
+                        <i class="fas fa-ambulance fa-4x text-danger"></i>
+                    </div>
+                    <h3 class="card-title text-danger">Ambulance</h3>
+                    <div class="emergency-number">
+                        <a href="tel:10177" class="btn btn-danger btn-lg">
+                            <i class="fas fa-phone me-2"></i>10177
+                        </a>
+                    </div>
+                    <p class="text-muted mt-3">Medical emergencies, injuries</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card emergency-card border-danger">
+                <div class="card-body text-center">
+                    <div class="emergency-icon mb-3">
+                        <i class="fas fa-fire-extinguisher fa-4x text-warning"></i>
+                    </div>
+                    <h3 class="card-title text-warning">Fire Services</h3>
+                    <div class="emergency-number">
+                        <a href="tel:10177" class="btn btn-warning btn-lg">
+                            <i class="fas fa-phone me-2"></i>10177
+                        </a>
+                    </div>
+                    <p class="text-muted mt-3">Fires, rescue operations, hazardous materials</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Emergency Services -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-phone-alt me-2"></i>Additional Emergency Numbers
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="emergency-contact mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Sea Rescue</strong>
+                                <br><small class="text-muted">Maritime emergencies</small>
+                            </div>
+                            <a href="tel:082911" class="btn btn-outline-primary btn-sm">082 911</a>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Mountain Rescue</strong>
+                                <br><small class="text-muted">Mountain, hiking emergencies</small>
+                            </div>
+                            <a href="tel:0217004500" class="btn btn-outline-primary btn-sm">021 700 4500</a>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Poison Information</strong>
+                                <br><small class="text-muted">Poisoning, overdose</small>
+                            </div>
+                            <a href="tel:0861555777" class="btn btn-outline-primary btn-sm">086 155 5777</a>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Child Protection</strong>
+                                <br><small class="text-muted">Child abuse, neglect</small>
+                            </div>
+                            <a href="tel:08000551111" class="btn btn-outline-primary btn-sm">0800 055 1111</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>Municipal Emergencies
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">For non-life-threatening municipal emergencies:</p>
+                    
+                    <div class="emergency-contact mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Water Emergency</strong>
+                                <br><small class="text-muted">Burst pipes, no water</small>
+                            </div>
+                            <a href="{{ url_for('portal.submit_complaint') }}?category=Water&priority=urgent" 
+                               class="btn btn-outline-warning btn-sm">Report</a>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Power Outage</strong>
+                                <br><small class="text-muted">Electricity failures</small>
+                            </div>
+                            <a href="{{ url_for('portal.submit_complaint') }}?category=Electricity&priority=urgent" 
+                               class="btn btn-outline-warning btn-sm">Report</a>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Road Emergency</strong>
+                                <br><small class="text-muted">Dangerous road conditions</small>
+                            </div>
+                            <a href="{{ url_for('portal.submit_complaint') }}?category=Roads&priority=urgent" 
+                               class="btn btn-outline-warning btn-sm">Report</a>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>General Emergency</strong>
+                                <br><small class="text-muted">Other municipal emergencies</small>
+                            </div>
+                            <a href="{{ url_for('portal.submit_complaint') }}?category=Emergency&priority=urgent" 
+                               class="btn btn-outline-warning btn-sm">Report</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Emergency Guidelines -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-check me-2"></i>When to Call Emergency Services
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <h6 class="text-danger">URGENT - Call Immediately:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-danger me-2"></i>Life-threatening injuries</li>
+                                <li><i class="fas fa-check text-danger me-2"></i>Heart attack, stroke</li>
+                                <li><i class="fas fa-check text-danger me-2"></i>Serious accidents</li>
+                                <li><i class="fas fa-check text-danger me-2"></i>House fires</li>
+                                <li><i class="fas fa-check text-danger me-2"></i>Armed robbery</li>
+                                <li><i class="fas fa-check text-danger me-2"></i>Gas leaks</li>
+                            </ul>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-warning">Municipal Services:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-warning me-2"></i>Water pipe bursts</li>
+                                <li><i class="fas fa-check text-warning me-2"></i>Power outages</li>
+                                <li><i class="fas fa-check text-warning me-2"></i>Dangerous potholes</li>
+                                <li><i class="fas fa-check text-warning me-2"></i>Sewage overflows</li>
+                                <li><i class="fas fa-check text-warning me-2"></i>Illegal dumping</li>
+                                <li><i class="fas fa-check text-warning me-2"></i>Street light failures</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-phone-volume me-2"></i>How to Make an Emergency Call
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="emergency-steps">
+                        <li><strong>Stay Calm</strong> - Take a deep breath and speak clearly</li>
+                        <li><strong>Dial the Number</strong> - Use the appropriate emergency number</li>
+                        <li><strong>Give Location</strong> - Provide exact address or landmarks</li>
+                        <li><strong>Describe Emergency</strong> - What happened? How many people?</li>
+                        <li><strong>Follow Instructions</strong> - Do what the operator tells you</li>
+                        <li><strong>Stay on Line</strong> - Don't hang up until told to do so</li>
+                    </ol>
+                    
+                    <div class="alert alert-info mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Remember:</strong> Emergency calls are free from any phone, including mobile phones without airtime.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Emergency Preparedness -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-first-aid me-2"></i>Emergency Preparedness Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-home text-primary me-2"></i>At Home</h6>
+                            <ul class="list-unstyled">
+                                <li>• Keep emergency numbers visible</li>
+                                <li>• Have a first aid kit</li>
+                                <li>• Know where your water/gas shut-offs are</li>
+                                <li>• Have flashlights and batteries</li>
+                                <li>• Keep important documents safe</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-car text-success me-2"></i>In Your Vehicle</h6>
+                            <ul class="list-unstyled">
+                                <li>• Keep your phone charged</li>
+                                <li>• Have emergency supplies in car</li>
+                                <li>• Know your exact location</li>
+                                <li>• Have emergency contacts saved</li>
+                                <li>• Keep spare tire inflated</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6><i class="fas fa-users text-warning me-2"></i>For Your Family</h6>
+                            <ul class="list-unstyled">
+                                <li>• Teach children emergency numbers</li>
+                                <li>• Have a family emergency plan</li>
+                                <li>• Keep medical information updated</li>
+                                <li>• Know allergies and medications</li>
+                                <li>• Practice emergency procedures</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="text-center mt-5">
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('portal.submit_complaint') }}?category=Emergency" class="btn btn-danger btn-lg">
+                <i class="fas fa-exclamation-triangle me-2"></i>Report Municipal Emergency
+            </a>
+            <a href="{{ url_for('portal.index') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-home me-2"></i>Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.emergency-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.emergency-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.emergency-number a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+}
+
+.emergency-contact {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 1rem;
+}
+
+.emergency-contact:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.emergency-steps {
+    font-size: 0.95rem;
+}
+
+.emergency-steps li {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.emergency-icon i {
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+}
+</style>
+{% endblock %}

@@ -6,6 +6,7 @@ from src.admin.views import admin_bp
 from src.api.v1.routes import api_v1
 from src.portal.views import portal_bp
 from src.services.user_service import user_service
+from src.services.ussd_service import ussd_service
 
 def create_app():
     import os
@@ -33,6 +34,25 @@ def create_app():
     @app.route('/locate', methods=['POST'])
     def locate():
         return api_handler.locate_endpoint()
+    
+    @app.route('/ussd', methods=['POST'])
+    def ussd_endpoint():
+        """USSD endpoint for feature phone access"""
+        from flask import request
+        
+        # Get USSD parameters (format may vary by telecom provider)
+        session_id = request.form.get('sessionId', '')
+        phone_number = request.form.get('phoneNumber', '')
+        text = request.form.get('text', '')
+        
+        # Process USSD request
+        response_text, continue_session = ussd_service.process_ussd_request(session_id, phone_number, text)
+        
+        # Return USSD response (format depends on provider)
+        return {
+            'text': response_text,
+            'continueSession': continue_session
+        }
     
     @app.route('/')
     @app.route('/index')

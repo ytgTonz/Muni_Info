@@ -155,5 +155,21 @@ class ComplaintRepository:
             stats["by_type"][comp_type] = stats["by_type"].get(comp_type, 0) + 1
         
         return stats
+    
+    def get_complaints_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Complaint]:
+        """Get complaints within a specific date range for analytics"""
+        complaints = self._load_complaints()
+        filtered_complaints = []
+        
+        for comp_data in complaints:
+            try:
+                complaint_date = datetime.fromisoformat(comp_data["timestamp"])
+                if start_date <= complaint_date <= end_date:
+                    filtered_complaints.append(self._dict_to_complaint(comp_data))
+            except (KeyError, ValueError):
+                # Skip complaints with invalid timestamps
+                continue
+        
+        return sorted(filtered_complaints, key=lambda x: x.timestamp, reverse=True)
 
 complaint_repository = ComplaintRepository()

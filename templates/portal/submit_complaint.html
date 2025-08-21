@@ -3,60 +3,107 @@
 {% block title %}Submit Complaint - Muni-Info{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
+    <!-- Government-style breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('portal.index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('portal.services') }}">Services</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Submit Complaint</li>
+        </ol>
+    </nav>
+    
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Lodge a Complaint
-                    </h3>
+            <!-- Clear government-style header -->
+            <div class="page-header mb-4">
+                <h1 class="h2 text-primary mb-2">Submit a Service Complaint</h1>
+                <p class="text-muted">Report municipal service issues and track their resolution</p>
+            </div>
+            
+            <!-- Information panel with plain language -->
+            <div class="alert alert-info mb-4" role="region" aria-labelledby="info-heading">
+                <h5 id="info-heading" class="alert-heading">
+                    <i class="fas fa-info-circle me-2" aria-hidden="true"></i>Before you start
+                </h5>
+                <ul class="mb-0">
+                    <li><strong>Have your contact details ready</strong> - We need your phone number to send updates</li>
+                    <li><strong>Describe the problem clearly</strong> - Include location and when it started</li>
+                    <li><strong>You will get a reference number</strong> - Use this to track your complaint</li>
+                    <li><strong>For emergencies</strong> - Call the numbers on our <a href="{{ url_for('portal.emergency_services') }}" class="alert-link">Emergency Services page</a></li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h5 mb-0">
+                        <i class="fas fa-edit me-2" aria-hidden="true"></i>Complaint Details
+                    </h2>
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-4">
-                        Use this form to report municipal service issues. We'll provide you with a reference number 
-                        to track your complaint's progress.
+                        <strong>All fields marked with * are required.</strong> 
+                        The more information you provide, the faster we can help you.
                     </p>
                     
                     <form method="POST">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone_number" class="form-label">Phone Number *</label>
-                                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
-                                       placeholder="+27 XX XXX XXXX" required>
-                                <div class="form-text">We'll use this to send you updates</div>
+                        <fieldset>
+                            <legend class="sr-only">Contact Information</legend>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone_number" class="form-label">Your phone number <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                           placeholder="example: 012 345 6789" required 
+                                           aria-describedby="phone-help">
+                                    <div id="phone-help" class="form-text">We will send SMS updates about your complaint to this number</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="complaint_type" class="form-label">What type of problem is this? <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="complaint_type" name="complaint_type" required
+                                            aria-describedby="type-help">
+                                        <option value="">Choose the service type</option>
+                                        <option value="Water">Water and sewage</option>
+                                        <option value="Electricity">Electricity and power</option>
+                                        <option value="Sanitation">Waste and recycling</option>
+                                        <option value="Roads">Roads and transport</option>
+                                        <option value="Housing">Housing and buildings</option>
+                                        <option value="Parks">Parks and recreation</option>
+                                        <option value="Other">Something else</option>
+                                    </select>
+                                    <div id="type-help" class="form-text">Choose the category that best matches your problem</div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        
+                        <fieldset>
+                            <legend class="sr-only">Problem Details</legend>
+                            <div class="mb-3">
+                                <label for="priority" class="form-label">How urgent is this problem?</label>
+                                <select class="form-select" id="priority" name="priority" 
+                                        aria-describedby="priority-help">
+                                    <option value="low">Low priority - Can wait a week</option>
+                                    <option value="medium" selected>Normal priority - Needs attention soon</option>
+                                    <option value="high">High priority - Affects daily life</option>
+                                    <option value="urgent">Urgent - Safety risk or emergency</option>
+                                </select>
+                                <div id="priority-help" class="form-text">
+                                    <strong>Choose 'Urgent' only for safety emergencies.</strong> 
+                                    For life-threatening emergencies, call 10111 (Police) or 10177 (Fire/Medical).
+                                </div>
                             </div>
                             
-                            <div class="col-md-6 mb-3">
-                                <label for="complaint_type" class="form-label">Complaint Type *</label>
-                                <select class="form-select" id="complaint_type" name="complaint_type" required>
-                                    <option value="">Select complaint type</option>
-                                    <option value="Water">Water Services</option>
-                                    <option value="Electricity">Electricity</option>
-                                    <option value="Sanitation">Sanitation</option>
-                                    <option value="Roads">Roads & Infrastructure</option>
-                                    <option value="Other">Other</option>
-                                </select>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Tell us about the problem <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="6" 
+                                          required aria-describedby="description-help"
+                                          placeholder="Example: The streetlight outside 123 Main Street has been broken for 2 weeks. The light post is leaning and the glass is cracked. This makes it dangerous to walk there at night."></textarea>
+                                <div id="description-help" class="form-text">
+                                    <strong>Include:</strong> 
+                                    What is the problem? | Where exactly is it? | When did it start? | How does it affect you?
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="priority" class="form-label">Priority Level</label>
-                            <select class="form-select" id="priority" name="priority">
-                                <option value="low">🟢 Low - Minor issue, not urgent</option>
-                                <option value="medium" selected>🟡 Medium - Standard issue</option>
-                                <option value="high">🟠 High - Significant impact</option>
-                                <option value="urgent">🔴 Urgent - Emergency or safety issue</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description *</label>
-                            <textarea class="form-control" id="description" name="description" rows="5" 
-                                      placeholder="Please describe the issue in detail. Include location, when it started, and any other relevant information..." required></textarea>
-                            <div class="form-text">Be as specific as possible to help us resolve your issue quickly</div>
-                        </div>
+                        </fieldset>
                         
                         <div class="mb-4">
                             <div class="form-check">

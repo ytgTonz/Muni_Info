@@ -5,6 +5,9 @@ from src.services.complaint_service import complaint_service
 from src.services.community_service import community_service
 from src.services.location_service import location_service
 from src.services.user_service import user_service
+from src.services.analytics_service import analytics_service
+from src.services.monitoring_service import monitoring_service
+from src.services.routing_service import routing_service
 from src.models.complaint import ComplaintStatus, ComplaintPriority
 from src.models.community import AnnouncementType, AnnouncementPriority
 from src.models.user import UserRole
@@ -411,3 +414,175 @@ def api_documentation():
     }
     
     return jsonify(docs)
+
+# Phase 3: Advanced Analytics and Monitoring Endpoints
+
+@api_v1.route('/analytics/dashboard', methods=['GET'])
+@require_api_key
+def get_analytics_dashboard():
+    """Get comprehensive analytics dashboard data"""
+    try:
+        days = request.args.get('days', 30, type=int)
+        dashboard_data = analytics_service.get_comprehensive_dashboard(days)
+        
+        return jsonify({
+            'status': 'success',
+            'data': dashboard_data
+        })
+    except Exception as e:
+        return jsonify({'error': f'Analytics error: {str(e)}'}), 500
+
+@api_v1.route('/monitoring/health', methods=['GET'])
+@require_api_key
+def get_system_health():
+    """Get system health status"""
+    try:
+        health_data = monitoring_service.check_system_health()
+        
+        return jsonify({
+            'status': 'success',
+            'health_checks': {
+                component: {
+                    'status': health.status.value,
+                    'response_time': health.response_time,
+                    'message': health.message,
+                    'timestamp': health.timestamp.isoformat()
+                }
+                for component, health in health_data.items()
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': f'Health check error: {str(e)}'}), 500
+
+@api_v1.route('/monitoring/metrics', methods=['GET'])
+@require_api_key 
+def get_performance_metrics():
+    """Get real-time performance metrics"""
+    try:
+        metrics = monitoring_service.collect_system_metrics()
+        
+        return jsonify({
+            'status': 'success',
+            'metrics': [
+                {
+                    'name': metric.name,
+                    'value': metric.value,
+                    'unit': metric.unit,
+                    'timestamp': metric.timestamp.isoformat()
+                }
+                for metric in metrics
+            ]
+        })
+    except Exception as e:
+        return jsonify({'error': f'Metrics error: {str(e)}'}), 500
+
+@api_v1.route('/monitoring/alerts', methods=['GET'])
+@require_api_key
+def get_active_alerts():
+    """Get active system alerts"""
+    try:
+        dashboard_data = monitoring_service.get_dashboard_data()
+        
+        return jsonify({
+            'status': 'success',
+            'active_alerts': dashboard_data['active_alerts'],
+            'total_alerts': len(dashboard_data['active_alerts'])
+        })
+    except Exception as e:
+        return jsonify({'error': f'Alerts error: {str(e)}'}), 500
+
+@api_v1.route('/routing/status', methods=['GET'])
+@require_api_key
+def get_routing_status():
+    """Get intelligent routing system status"""
+    try:
+        department_status = routing_service.get_department_status()
+        analytics = routing_service.get_routing_analytics()
+        
+        return jsonify({
+            'status': 'success',
+            'departments': department_status,
+            'analytics': analytics
+        })
+    except Exception as e:
+        return jsonify({'error': f'Routing status error: {str(e)}'}), 500
+
+@api_v1.route('/ai/analysis/<reference_id>', methods=['GET'])
+@require_api_key
+def get_ai_analysis(reference_id):
+    """Get AI analysis results for a specific complaint"""
+    try:
+        complaint = complaint_service.get_complaint_by_reference(reference_id)
+        if not complaint:
+            return jsonify({'error': 'Complaint not found'}), 404
+        
+        if not hasattr(complaint, 'ai_analysis') or not complaint.ai_analysis:
+            return jsonify({'error': 'No AI analysis available for this complaint'}), 404
+        
+        return jsonify({
+            'status': 'success',
+            'reference_id': reference_id,
+            'ai_analysis': complaint.ai_analysis
+        })
+    except Exception as e:
+        return jsonify({'error': f'AI analysis error: {str(e)}'}), 500
+
+@api_v1.route('/ai/trends', methods=['GET'])
+@require_api_key
+def get_ai_trends():
+    """Get AI-powered trend analysis"""
+    try:
+        # Get recent complaints for trend analysis
+        recent_complaints = complaint_service.repository.get_recent_complaints(30)
+        
+        # Use AI service to analyze trends
+        complaints_data = [
+            {
+                'description': c.description,
+                'category': c.complaint_type,
+                'priority': c.priority.value,
+                'timestamp': c.timestamp.isoformat()
+            }
+            for c in recent_complaints
+        ]
+        
+        trending_issues = analytics_service.ai_service.get_trending_issues(
+            [{'description': c['description']} for c in complaints_data]
+        )
+        
+        return jsonify({
+            'status': 'success',
+            'trending_issues': trending_issues,
+            'analysis_period': '30 days',
+            'total_analyzed': len(recent_complaints)
+        })
+    except Exception as e:
+        return jsonify({'error': f'Trend analysis error: {str(e)}'}), 500
+
+@api_v1.route('/predictions/resolution-time', methods=['POST'])
+@require_api_key
+def predict_resolution_time():
+    """Predict resolution time for a complaint"""
+    try:
+        data = request.get_json()
+        category = data.get('category', 'Other')
+        priority = data.get('priority', 'medium')
+        description = data.get('description', '')
+        
+        # Use AI to analyze and predict
+        if description:
+            ai_analysis = analytics_service.ai_service.analyze_complaint(description)
+            category = ai_analysis.category
+            priority = ai_analysis.priority
+        
+        predicted_time = analytics_service.ai_service.predict_resolution_time(category, priority)
+        
+        return jsonify({
+            'status': 'success',
+            'category': category,
+            'priority': priority,
+            'predicted_resolution_time': predicted_time,
+            'confidence': 0.75  # Simplified confidence score
+        })
+    except Exception as e:
+        return jsonify({'error': f'Prediction error: {str(e)}'}), 500

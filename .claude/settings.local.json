@@ -6,7 +6,8 @@
       "Bash(rm:*)",
       "Bash(python:*)",
       "Bash(curl:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "WebFetch(domain:www.numberanalytics.com)"
     ],
     "deny": [],
     "ask": []

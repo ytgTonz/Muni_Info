@@ -1,0 +1,242 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Community Announcements - Muni-Info{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6">Community Announcements</h1>
+            <p class="text-muted">Stay informed about municipal news, updates, and important notices</p>
+        </div>
+        <div class="col-md-4">
+            <form method="GET" class="d-flex">
+                <select class="form-select me-2" name="municipality" onchange="this.form.submit()">
+                    <option value="">All Municipalities</option>
+                    <option value="City of Cape Town" {{ 'selected' if selected_municipality == 'City of Cape Town' }}>City of Cape Town</option>
+                    <option value="City of Johannesburg" {{ 'selected' if selected_municipality == 'City of Johannesburg' }}>City of Johannesburg</option>
+                    <option value="eThekwini" {{ 'selected' if selected_municipality == 'eThekwini' }}>eThekwini (Durban)</option>
+                    <option value="City of Tshwane" {{ 'selected' if selected_municipality == 'City of Tshwane' }}>City of Tshwane</option>
+                    <option value="Nelson Mandela Bay" {{ 'selected' if selected_municipality == 'Nelson Mandela Bay' }}>Nelson Mandela Bay</option>
+                    <option value="Buffalo City" {{ 'selected' if selected_municipality == 'Buffalo City' }}>Buffalo City</option>
+                    <option value="Mangaung" {{ 'selected' if selected_municipality == 'Mangaung' }}>Mangaung</option>
+                </select>
+            </form>
+        </div>
+    </div>
+    
+    {% if selected_municipality %}
+    <div class="alert alert-info">
+        <i class="fas fa-filter me-2"></i>
+        Showing announcements for <strong>{{ selected_municipality }}</strong>
+        <a href="{{ url_for('portal.announcements') }}" class="alert-link ms-2">Show all</a>
+    </div>
+    {% endif %}
+    
+    <!-- Announcements -->
+    <div class="row">
+        <div class="col-lg-8">
+            {% if announcements %}
+                {% for announcement in announcements %}
+                <div class="card mb-4 announcement-card">
+                    <div class="card-header d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="badge bg-{% if announcement.announcement_type.value == 'emergency' %}danger{% elif announcement.announcement_type.value == 'service_update' %}warning{% elif announcement.announcement_type.value == 'maintenance' %}info{% else %}secondary{% endif %} me-2">
+                                {{ announcement.get_type_display() }}
+                            </span>
+                            <span class="badge bg-{% if announcement.priority.value == 'urgent' %}danger{% elif announcement.priority.value == 'high' %}warning{% else %}secondary{% endif %}">
+                                {{ announcement.get_priority_display() }}
+                            </span>
+                        </div>
+                        <small class="text-muted">{{ announcement.created_at.strftime('%d %B %Y') }}</small>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ announcement.title }}</h5>
+                        <div class="card-text">
+                            {{ announcement.content | replace('\n', '<br>') | safe }}
+                        </div>
+                        
+                        {% if announcement.areas_affected %}
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                <strong>Areas Affected:</strong> {{ announcement.areas_affected | join(', ') }}
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        {% if announcement.contact_info %}
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-phone me-1"></i>
+                                <strong>Contact:</strong> {{ announcement.contact_info }}
+                            </small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-building me-1"></i>{{ announcement.municipality }}
+                                    {% if announcement.author %}
+                                    • <i class="fas fa-user me-1"></i>{{ announcement.author }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% if announcement.expires_at %}
+                            <div>
+                                <small class="text-{% if announcement.expires_at < moment().add(days=1) %}danger{% else %}muted{% endif %}">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Expires: {{ announcement.expires_at.strftime('%d %b %Y') }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                        <h5>No announcements available</h5>
+                        <p class="text-muted">
+                            {% if selected_municipality %}
+                            No announcements found for {{ selected_municipality }}.
+                            {% else %}
+                            There are currently no active announcements.
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('portal.index') }}" class="btn btn-primary">
+                            Return to Homepage
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('portal.submit_complaint') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Lodge Complaint
+                        </a>
+                        <a href="{{ url_for('portal.complaint_status') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-search me-2"></i>Check Status
+                        </a>
+                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-ambulance me-2"></i>Emergency Services
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Emergency Numbers -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-phone me-2"></i>Emergency Numbers
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Police:</strong>
+                        <a href="tel:10111" class="text-decoration-none float-end">10111</a>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Ambulance:</strong>
+                        <a href="tel:10177" class="text-decoration-none float-end">10177</a>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Fire:</strong>
+                        <a href="tel:10177" class="text-decoration-none float-end">10177</a>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger btn-sm">
+                            More Emergency Info
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Categories -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Service Categories
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="service-category-list">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-tint text-primary me-2"></i>Water</span>
+                            <small class="text-muted">24/7</small>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-bolt text-warning me-2"></i>Electricity</span>
+                            <small class="text-muted">24/7</small>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-road text-info me-2"></i>Roads</span>
+                            <small class="text-muted">Office Hours</small>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-recycle text-success me-2"></i>Waste</span>
+                            <small class="text-muted">Office Hours</small>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-home text-danger me-2"></i>Housing</span>
+                            <small class="text-muted">Office Hours</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>Contact Us
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Call Center:</strong><br>080 MUNI (6864)</p>
+                    <p class="mb-2"><strong>Email:</strong><br>help@muni-info.gov.za</p>
+                    <p class="mb-2"><strong>WhatsApp:</strong><br>+27 XX XXX XXXX</p>
+                    <p class="mb-0"><strong>USSD:</strong><br>*120*MUNI#</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.announcement-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.announcement-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.announcement-card .card-header .badge:first-child {
+    border-left-color: var(--bs-primary);
+}
+
+.service-category-list {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}

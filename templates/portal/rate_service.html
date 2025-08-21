@@ -1,0 +1,237 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Rate Service - Muni-Info{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star me-2"></i>Rate Our Service
+                    </h4>
+                    <small>Your feedback helps us improve municipal services</small>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="service_type" class="form-label">Service Type</label>
+                                <select class="form-select" id="service_type" name="service_type" required>
+                                    <option value="">Select a service...</option>
+                                    <option value="Water">Water & Sanitation</option>
+                                    <option value="Electricity">Electricity</option>
+                                    <option value="Roads">Roads & Infrastructure</option>
+                                    <option value="Sanitation">Waste Management</option>
+                                    <option value="Housing">Housing</option>
+                                    <option value="Parks">Parks & Recreation</option>
+                                    <option value="Emergency">Emergency Services</option>
+                                    <option value="General">General Service</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="municipality" class="form-label">Municipality</label>
+                                <select class="form-select" id="municipality" name="municipality" required>
+                                    <option value="">Select your municipality...</option>
+                                    <option value="City of Cape Town">City of Cape Town</option>
+                                    <option value="City of Johannesburg">City of Johannesburg</option>
+                                    <option value="eThekwini">eThekwini (Durban)</option>
+                                    <option value="City of Tshwane">City of Tshwane (Pretoria)</option>
+                                    <option value="Nelson Mandela Bay">Nelson Mandela Bay (Port Elizabeth)</option>
+                                    <option value="Buffalo City">Buffalo City (East London)</option>
+                                    <option value="Mangaung">Mangaung (Bloemfontein)</option>
+                                    <option value="Other">Other Municipality</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                   placeholder="+27123456789" required>
+                            <div class="form-text">We'll use this to follow up if needed</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Service Rating</label>
+                            <div class="rating-container">
+                                <div class="star-rating" id="starRating">
+                                    <span class="star" data-rating="1">★</span>
+                                    <span class="star" data-rating="2">★</span>
+                                    <span class="star" data-rating="3">★</span>
+                                    <span class="star" data-rating="4">★</span>
+                                    <span class="star" data-rating="5">★</span>
+                                </div>
+                                <input type="hidden" id="rating" name="rating" required>
+                                <div class="rating-text mt-2" id="ratingText">Click on stars to rate</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comments (Optional)</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="4" 
+                                      placeholder="Tell us more about your experience..."></textarea>
+                            <div class="form-text">Share specific details about the service quality</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_anonymous" name="is_anonymous">
+                                <label class="form-check-label" for="is_anonymous">
+                                    Submit this rating anonymously
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('portal.services') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Services
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-star me-2"></i>Submit Rating
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Rating Guidelines -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Rating Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="rating-example">★★★★★</span>
+                                <span class="ms-2">Excellent - Exceeded expectations</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="rating-example">★★★★☆</span>
+                                <span class="ms-2">Good - Met expectations</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="rating-example">★★★☆☆</span>
+                                <span class="ms-2">Average - Some issues</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="rating-example">★★☆☆☆</span>
+                                <span class="ms-2">Poor - Below expectations</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="rating-example">★☆☆☆☆</span>
+                                <span class="ms-2">Very Poor - Major issues</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.star {
+    transition: color 0.2s;
+}
+
+.star:hover,
+.star.active {
+    color: #ffc107;
+}
+
+.star.active {
+    color: #ffc107;
+}
+
+.rating-example {
+    font-size: 1.1rem;
+    color: #ffc107;
+}
+
+.rating-container {
+    text-align: center;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+}
+
+.rating-text {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('rating');
+    const ratingText = document.getElementById('ratingText');
+    
+    const ratingTexts = {
+        1: 'Very Poor - Major issues with service',
+        2: 'Poor - Below expectations',
+        3: 'Average - Some issues to address',
+        4: 'Good - Met expectations',
+        5: 'Excellent - Exceeded expectations'
+    };
+    
+    stars.forEach(star => {
+        star.addEventListener('mouseover', function() {
+            const rating = parseInt(this.dataset.rating);
+            highlightStars(rating);
+        });
+        
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            ratingInput.value = rating;
+            highlightStars(rating);
+            ratingText.textContent = ratingTexts[rating];
+            
+            // Make the selection permanent
+            stars.forEach(s => s.classList.remove('active'));
+            for (let i = 0; i < rating; i++) {
+                stars[i].classList.add('active');
+            }
+        });
+    });
+    
+    // Reset on mouse leave
+    document.getElementById('starRating').addEventListener('mouseleave', function() {
+        const currentRating = ratingInput.value;
+        if (currentRating) {
+            highlightStars(parseInt(currentRating));
+        } else {
+            highlightStars(0);
+        }
+    });
+    
+    function highlightStars(rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#ddd';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
