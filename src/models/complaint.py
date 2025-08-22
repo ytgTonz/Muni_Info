@@ -29,6 +29,8 @@ class Complaint:
     timestamp: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     image_urls: List[str] = field(default_factory=list)
+    video_urls: List[str] = field(default_factory=list)
+    media_metadata: dict = field(default_factory=dict)
     assigned_to: Optional[str] = None
     resolution_notes: Optional[str] = None
     location_info: Optional[dict] = None
@@ -45,6 +47,17 @@ class Complaint:
         if image_url not in self.image_urls:
             self.image_urls.append(image_url)
     
+    def add_video(self, video_url: str):
+        if video_url not in self.video_urls:
+            self.video_urls.append(video_url)
+    
+    def add_media_metadata(self, media_type: str, filename: str, file_size: int, upload_timestamp: datetime):
+        self.media_metadata[filename] = {
+            'type': media_type,
+            'size': file_size,
+            'uploaded_at': upload_timestamp.isoformat()
+        }
+    
     def to_dict(self):
         """Convert to dictionary for JSON serialization"""
         return {
@@ -57,6 +70,8 @@ class Complaint:
             "timestamp": self.timestamp.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "image_urls": self.image_urls,
+            "video_urls": self.video_urls,
+            "media_metadata": self.media_metadata,
             "assigned_to": self.assigned_to,
             "resolution_notes": self.resolution_notes,
             "location_info": self.location_info,
@@ -75,6 +90,8 @@ class Complaint:
             "timestamp": self.timestamp,
             "updated_at": self.updated_at,
             "image_urls": self.image_urls,
+            "video_urls": self.video_urls,
+            "media_metadata": self.media_metadata,
             "assigned_to": self.assigned_to,
             "resolution_notes": self.resolution_notes,
             "location_info": self.location_info,
@@ -103,6 +120,8 @@ class Complaint:
             timestamp=data.get("timestamp", datetime.now()),
             updated_at=data.get("updated_at", datetime.now()),
             image_urls=data.get("image_urls", []),
+            video_urls=data.get("video_urls", []),
+            media_metadata=data.get("media_metadata", {}),
             assigned_to=data.get("assigned_to"),
             resolution_notes=data.get("resolution_notes"),
             location_info=data.get("location_info"),

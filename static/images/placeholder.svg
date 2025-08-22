@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2">
+  <rect x="1" y="1" width="298" height="198" fill="#f8f9fa" stroke="#dee2e6"/>
+  <circle cx="75" cy="65" r="15" fill="#dee2e6"/>
+  <polygon points="50,120 100,80 130,100 160,70 200,110 200,150 50,150" fill="#dee2e6"/>
+  <text x="150" y="175" text-anchor="middle" fill="#6c757d" font-family="Arial, sans-serif" font-size="14">Image not available</text>
+</svg>

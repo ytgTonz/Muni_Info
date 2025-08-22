@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory, abort
 from src.config import Config
 from src.handlers.webhook_handler import webhook_handler
 from src.handlers.api_handler import api_handler
@@ -8,6 +8,8 @@ from src.portal.views import portal_bp
 from src.services.user_service import user_service
 from src.services.ussd_service import ussd_service
 from src.services.database_service import db_service
+from src.services.media_service import media_service
+import os
 
 def create_app():
     import os
@@ -54,6 +56,29 @@ def create_app():
             'text': response_text,
             'continueSession': continue_session
         }
+    
+    @app.route('/uploads/<path:filename>')
+    def uploaded_file(filename):
+        """Serve uploaded media files"""
+        try:
+            # Ensure proper path handling for Windows
+            safe_path = filename.replace('\\', '/')
+            upload_folder = os.path.abspath(media_service.upload_folder)
+            
+            # Security check to prevent directory traversal
+            file_path = os.path.join(upload_folder, safe_path)
+            file_path = os.path.abspath(file_path)
+            
+            if not file_path.startswith(upload_folder):
+                abort(403)  # Forbidden - attempted directory traversal
+            
+            if not os.path.exists(file_path):
+                abort(404)  # File not found
+            
+            return send_from_directory(upload_folder, safe_path)
+        except Exception as e:
+            app.logger.error(f"Error serving file {filename}: {e}")
+            abort(500)
     
     @app.route('/')
     @app.route('/index')

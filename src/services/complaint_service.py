@@ -131,6 +131,10 @@ class ComplaintService:
             return self.repository.save_complaint(complaint)
         return None
     
+    def update_complaint(self, complaint: Complaint) -> Optional[Complaint]:
+        """Update an existing complaint in the repository"""
+        return self.repository.save_complaint(complaint)
+    
     def format_complaint_summary(self, complaint: Complaint) -> str:
         summary = f"📋 *Complaint Summary*\n\n"
         summary += f"**Reference:** {complaint.reference_id}\n"

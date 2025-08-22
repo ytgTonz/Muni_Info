@@ -110,6 +110,64 @@
                             </div>
                         </div>
                         
+                        <!-- Media Attachments -->
+                        {% if complaint.image_urls or complaint.video_urls %}
+                        <div class="mb-4">
+                            <h5 class="text-primary"><i class="fas fa-images me-2"></i>Attachments</h5>
+                            <div class="row g-3">
+                                {% if complaint.image_urls %}
+                                    {% for image_url in complaint.image_urls %}
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body p-2">
+                                                <div class="position-relative">
+                                                    <img src="{{ image_url }}" class="img-fluid rounded" alt="Complaint Image" 
+                                                         style="max-height: 200px; width: 100%; object-fit: cover; cursor: pointer;"
+                                                         onclick="showImageModal('{{ image_url }}', 'Complaint Image')"
+                                                         onerror="this.onerror=null; this.src='/static/images/placeholder.svg'; this.alt='Image not available';"
+                                                         loading="lazy">
+                                                    <div class="position-absolute top-0 end-0 m-1">
+                                                        <span class="badge bg-primary">
+                                                            <i class="fas fa-image me-1"></i>Photo
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Click to enlarge</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                                
+                                {% if complaint.video_urls %}
+                                    {% for video_url in complaint.video_urls %}
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body p-2">
+                                                <div class="position-relative">
+                                                    <video controls class="w-100 rounded" style="max-height: 300px;">
+                                                        <source src="{{ video_url }}" type="video/mp4">
+                                                        <source src="{{ video_url }}" type="video/mov">
+                                                        <source src="{{ video_url }}" type="video/avi">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                    <div class="position-absolute top-0 end-0 m-1">
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-video me-1"></i>Video
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         
                         {% if complaint.ai_analysis %}
                         <div class="mb-4">
@@ -191,6 +249,21 @@
     </div>
 </div>
 
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Complaint Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Complaint Image">
+            </div>
+        </div>
+    </div>
+</div>
+
 {% block extra_css %}
 <style>
 .border-left-primary {
@@ -240,5 +313,16 @@
     font-weight: 600;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showImageModal(imageUrl, imageTitle) {
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('imageModalLabel').textContent = imageTitle;
+    modal.show();
+}
+</script>
 {% endblock %}
 {% endblock %}

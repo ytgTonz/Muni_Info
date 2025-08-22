@@ -11,6 +11,8 @@ class WebhookHandler:
         lon = request.values.get("Longitude")
         sender = request.form.get("From")
         media_url = request.values.get("MediaUrl0")  # First media attachment
+        media_content_type = request.values.get("MediaContentType0")  # Content type of media
+        num_media = int(request.values.get("NumMedia", 0))  # Number of media attachments
         
         resp = MessagingResponse()
         msg = resp.message()
@@ -20,8 +22,23 @@ class WebhookHandler:
         
         try:
             # Handle media messages
-            if media_url:
-                response_text = whatsapp_service.handle_media_message(media_url, sender)
+            if num_media > 0:
+                # Collect all media URLs
+                media_items = []
+                for i in range(num_media):
+                    media_url_key = f"MediaUrl{i}"
+                    content_type_key = f"MediaContentType{i}"
+                    media_url = request.values.get(media_url_key)
+                    content_type = request.values.get(content_type_key)
+                    
+                    if media_url:
+                        media_items.append({
+                            'url': media_url,
+                            'content_type': content_type,
+                            'index': i
+                        })
+                
+                response_text = whatsapp_service.handle_media_message(media_items, sender, incoming_msg)
                 msg.body(response_text)
                 return str(resp)
             

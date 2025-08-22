@@ -128,7 +128,9 @@
                         <div class="card">
                             <img src="{{ image_url }}" class="card-img-top" alt="Complaint attachment" 
                                  style="height: 200px; object-fit: cover;" data-bs-toggle="modal" 
-                                 data-bs-target="#imageModal" onclick="showImage('{{ image_url }}')">
+                                 data-bs-target="#imageModal" onclick="showImage('{{ image_url }}')"
+                                 onerror="this.onerror=null; this.src='/static/images/placeholder.svg'; this.alt='Image not available';"
+                                 loading="lazy">
                             <div class="card-body p-2">
                                 <small class="text-muted">Attachment {{ loop.index }}</small>
                             </div>

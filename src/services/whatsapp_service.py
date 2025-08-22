@@ -172,26 +172,99 @@ class WhatsAppService:
             complaints_list=complaints_list
         )
     
-    def handle_media_message(self, media_url: str, sender: str) -> str:
+    def handle_media_message(self, media_items: list, sender: str, message_text: str = "") -> str:
         user_language = self.get_user_language(sender)
+        current_state = state_manager.get_state(sender)
         
-        # Download and save media
-        file_path = media_service.download_media_from_twilio(
-            media_url, 
-            Config.TWILIO_AUTH_TOKEN, 
-            Config.TWILIO_ACCOUNT_SID
-        )
+        processed_files = []
+        failed_files = []
         
-        if file_path:
-            # Check if user has a pending complaint to attach media to
-            current_state = state_manager.get_state(sender)
-            if current_state == 'complaint_description':
-                # This media is for the current complaint being created
-                return "📸 Image received! Please describe your complaint."
+        # Process each media item
+        for media_item in media_items:
+            media_url = media_item['url']
+            content_type = media_item['content_type']
+            
+            # Download and save media
+            file_path = media_service.download_media_from_twilio(
+                media_url, 
+                Config.TWILIO_AUTH_TOKEN, 
+                Config.TWILIO_ACCOUNT_SID
+            )
+            
+            if file_path:
+                processed_files.append({
+                    'path': file_path,
+                    'type': 'image' if content_type.startswith('image/') else 'video',
+                    'content_type': content_type
+                })
             else:
-                return "📸 Image received and saved."
+                failed_files.append(content_type)
+        
+        # Check if user has a pending complaint to attach media to
+        if current_state == 'complaint_description' and processed_files:
+            # Store media files for the current complaint being created
+            complaint_data = state_manager.get_user_data(sender, 'current_complaint') or {}
+            existing_media = complaint_data.get('media_files', [])
+            existing_media.extend(processed_files)
+            complaint_data['media_files'] = existing_media
+            state_manager.set_user_data(sender, 'current_complaint', complaint_data)
+            
+            # Count by type
+            images = sum(1 for f in existing_media if f['type'] == 'image')
+            videos = sum(1 for f in existing_media if f['type'] == 'video')
+            
+            response = f"📸 {len(processed_files)} file(s) received for your complaint!\n"
+            if images > 0:
+                response += f"🖼️ Images: {images}\n"
+            if videos > 0:
+                response += f"🎬 Videos: {videos}\n"
+            
+            if message_text:
+                response += f"\nMessage: {message_text}\n"
+            
+            response += "\nYou can send more media or describe your complaint."
+            
+        elif current_state in ['complaint_category', 'start_complaint'] and processed_files:
+            # Auto-start complaint creation with media
+            complaint_data = {
+                'media_files': processed_files,
+                'sender': sender
+            }
+            state_manager.set_user_data(sender, 'current_complaint', complaint_data)
+            state_manager.set_state(sender, 'complaint_description')
+            
+            response = f"📸 {len(processed_files)} file(s) received!\n"
+            response += "I see you want to report an issue. Please select the category:\n\n"
+            response += "1️⃣ Water & Sanitation\n"
+            response += "2️⃣ Electricity\n"  
+            response += "3️⃣ Roads & Transport\n"
+            response += "4️⃣ Waste Management\n"
+            response += "5️⃣ Housing\n"
+            response += "6️⃣ Parks & Recreation\n"
+            response += "7️⃣ Other\n\n"
+            response += "Reply with the number of your complaint category."
+            
         else:
-            return "❌ Failed to process image. Please try again."
+            # General media handling
+            images = sum(1 for f in processed_files if f['type'] == 'image')
+            videos = sum(1 for f in processed_files if f['type'] == 'video')
+            
+            response = f"📸 {len(processed_files)} file(s) received and saved!\n"
+            if images > 0:
+                response += f"🖼️ Images: {images}\n"
+            if videos > 0:
+                response += f"🎬 Videos: {videos}\n"
+            
+            if message_text:
+                response += f"\nMessage: {message_text}\n"
+            
+            response += "\nTo report an issue with these files, reply 'complaint'."
+        
+        # Add failure notifications
+        if failed_files:
+            response += f"\n⚠️ Failed to process {len(failed_files)} file(s)."
+        
+        return response
     
     def detect_reference_id(self, text: str) -> str:
         """Detect if text contains a reference ID pattern (MI-YYYY-XXXXXX)"""

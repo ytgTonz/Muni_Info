@@ -11,8 +11,22 @@
       "department": "IT",
       "is_active": true,
       "created_at": "2025-08-20T15:33:26.496350",
-      "last_login": "2025-08-21T13:52:43.478914",
+      "last_login": "2025-08-22T10:30:08.874406",
       "password_hash": "scrypt:32768:8:1$TQnHwHzmkmCu8YjD$92736088ed6476e402c574fe7dfc7fef872f4860e1f43d43262412065e273524a3e069e07ecc8ecb9dc1fc803b02f137dbff0cc06f211aaa047a0d71df09bb15"
+    },
+    {
+      "user_id": "1755851487623026",
+      "username": "thefox",
+      "email": "thefox@dedsec.com",
+      "phone_number": "",
+      "full_name": "Aiden Pearce",
+      "role": "municipal_staff",
+      "municipality": "Buffalo City",
+      "department": "Water & Sanitation",
+      "is_active": true,
+      "created_at": "2025-08-22T10:31:27.623020",
+      "last_login": "2025-08-22T10:31:49.430683",
+      "password_hash": "scrypt:32768:8:1$AVbNLSDPdsd1U97D$5b0704b179f09f5b1866f1b2ba36b7d95179e44de67ad8d8d89d7fb224b5cde67faeae04cc769a64ce4659b806f591ae4795f9fa3e5ffebe808e32070c2263d4"
     }
   ]
 }

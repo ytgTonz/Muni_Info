@@ -46,7 +46,7 @@
                         The more information you provide, the faster we can help you.
                     </p>
                     
-                    <form method="POST">
+                    <form method="POST" enctype="multipart/form-data" id="complaint-form">
                         <fieldset>
                             <legend class="sr-only">Contact Information</legend>
                             <div class="row">
@@ -101,6 +101,31 @@
                                 <div id="description-help" class="form-text">
                                     <strong>Include:</strong> 
                                     What is the problem? | Where exactly is it? | When did it start? | How does it affect you?
+                                </div>
+                            </div>
+                            
+                            <!-- Photo/Video Upload Section -->
+                            <div class="mb-4">
+                                <label for="media_files" class="form-label">Add photos or videos (optional)</label>
+                                <div class="upload-area border border-2 border-dashed rounded p-4 text-center mb-3" 
+                                     id="upload-area" onclick="document.getElementById('media_files').click();">
+                                    <div id="upload-placeholder">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                        <p class="mb-2"><strong>Click to select files</strong> or drag and drop</p>
+                                        <p class="text-muted small mb-0">
+                                            Photos: JPG, PNG, GIF (max 10MB each)<br>
+                                            Videos: MP4, MOV, AVI (max 100MB each)<br>
+                                            Maximum 5 files total
+                                        </p>
+                                    </div>
+                                    <div id="upload-preview" class="d-none">
+                                        <div id="file-list" class="row g-2"></div>
+                                    </div>
+                                </div>
+                                <input type="file" class="form-control d-none" id="media_files" name="media_files" 
+                                       multiple accept="image/*,video/*" aria-describedby="media-help">
+                                <div id="media-help" class="form-text">
+                                    Photos and videos help us understand the problem better and resolve it faster.
                                 </div>
                             </div>
                         </fieldset>
@@ -225,16 +250,189 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Form validation
-document.querySelector('form').addEventListener('submit', function(e) {
+// File upload handling
+let selectedFiles = [];
+const maxFiles = 5;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('media_files');
+    const uploadArea = document.getElementById('upload-area');
+    const uploadPlaceholder = document.getElementById('upload-placeholder');
+    const uploadPreview = document.getElementById('upload-preview');
+    const fileList = document.getElementById('file-list');
+
+    // Handle file input change
+    fileInput.addEventListener('change', handleFileSelect);
+
+    // Handle drag and drop
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('bg-light');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('bg-light');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('bg-light');
+        const files = Array.from(e.dataTransfer.files);
+        handleFiles(files);
+    });
+
+    function handleFileSelect(e) {
+        const files = Array.from(e.target.files);
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        // Check total file count
+        if (selectedFiles.length + files.length > maxFiles) {
+            alert(`Maximum ${maxFiles} files allowed. Currently selected: ${selectedFiles.length}`);
+            return;
+        }
+
+        files.forEach(file => {
+            if (validateFile(file)) {
+                selectedFiles.push(file);
+                addFilePreview(file);
+            }
+        });
+
+        updateUploadDisplay();
+    }
+
+    function validateFile(file) {
+        const maxImageSize = 10 * 1024 * 1024; // 10MB
+        const maxVideoSize = 100 * 1024 * 1024; // 100MB
+        const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+        const allowedVideoTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm', 'video/3gpp'];
+
+        if (allowedImageTypes.includes(file.type)) {
+            if (file.size > maxImageSize) {
+                alert(`Image file "${file.name}" is too large. Maximum size: 10MB`);
+                return false;
+            }
+        } else if (allowedVideoTypes.includes(file.type)) {
+            if (file.size > maxVideoSize) {
+                alert(`Video file "${file.name}" is too large. Maximum size: 100MB`);
+                return false;
+            }
+        } else {
+            alert(`File "${file.name}" has an unsupported format.`);
+            return false;
+        }
+
+        return true;
+    }
+
+    function addFilePreview(file) {
+        const fileId = 'file_' + Date.now() + Math.random().toString(36).substr(2, 9);
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+
+        const previewHtml = `
+            <div class="col-md-4 mb-2" data-file-id="${fileId}">
+                <div class="card">
+                    <div class="card-body p-2 text-center">
+                        ${isImage ? '<i class="fas fa-image fa-2x text-primary mb-1"></i>' : 
+                          isVideo ? '<i class="fas fa-video fa-2x text-success mb-1"></i>' : 
+                          '<i class="fas fa-file fa-2x text-secondary mb-1"></i>'}
+                        <p class="small mb-1 text-truncate" title="${file.name}">${file.name}</p>
+                        <p class="small text-muted mb-1">${formatFileSize(file.size)}</p>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile('${fileId}')">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        fileList.insertAdjacentHTML('beforeend', previewHtml);
+    }
+
+    function updateUploadDisplay() {
+        if (selectedFiles.length > 0) {
+            uploadPlaceholder.classList.add('d-none');
+            uploadPreview.classList.remove('d-none');
+        } else {
+            uploadPlaceholder.classList.remove('d-none');
+            uploadPreview.classList.add('d-none');
+        }
+    }
+
+    window.removeFile = function(fileId) {
+        const fileElement = document.querySelector(`[data-file-id="${fileId}"]`);
+        const fileName = fileElement.querySelector('p').textContent;
+        
+        // Remove from selectedFiles array
+        selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+        
+        // Remove from DOM
+        fileElement.remove();
+        
+        updateUploadDisplay();
+    };
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+});
+
+// Form validation and submission
+document.querySelector('#complaint-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
     const phoneNumber = document.getElementById('phone_number').value;
     const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
     
     if (!phoneRegex.test(phoneNumber)) {
-        e.preventDefault();
         alert('Please enter a valid phone number');
         return false;
     }
+
+    // Create FormData to handle file uploads
+    const formData = new FormData(this);
+    
+    // Add selected files to FormData
+    selectedFiles.forEach((file, index) => {
+        formData.append('media_files', file);
+    });
+
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+    submitBtn.disabled = true;
+
+    // Submit form
+    fetch(this.action || window.location.pathname, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            return response.text().then(html => {
+                document.body.innerHTML = html;
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting your complaint. Please try again.');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
 });
 </script>
 {% endblock %}

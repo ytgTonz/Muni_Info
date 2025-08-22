@@ -3,6 +3,7 @@ from src.services.complaint_service import complaint_service
 from src.services.community_service import community_service
 from src.services.location_service import location_service
 from src.services.location_enhancement_service import location_enhancement_service
+from src.services.media_service import media_service
 from src.models.complaint import ComplaintPriority
 
 portal_bp = Blueprint('portal', __name__, url_prefix='/portal')
@@ -42,6 +43,32 @@ def submit_complaint():
                 description=description,
                 priority=priority_enum
             )
+            
+            # Handle media file uploads
+            uploaded_files = request.files.getlist('media_files')
+            if uploaded_files:
+                for file in uploaded_files:
+                    if file and file.filename != '':
+                        success, result = media_service.save_file(file, complaint.reference_id)
+                        if success:
+                            # Add media URL to complaint
+                            if result['file_type'] == 'image':
+                                complaint.add_image(media_service.get_file_url(result['file_path']))
+                            elif result['file_type'] == 'video':
+                                complaint.add_video(media_service.get_file_url(result['file_path']))
+                            
+                            # Add media metadata
+                            complaint.add_media_metadata(
+                                result['file_type'],
+                                result['saved_filename'],
+                                result['file_size'],
+                                result['upload_timestamp']
+                            )
+                        else:
+                            flash(f'Error uploading file: {result.get("error", "Unknown error")}', 'warning')
+                
+                # Update complaint in database with media information
+                complaint_service.update_complaint(complaint)
             
             flash(f'Complaint submitted successfully! Reference: {complaint.reference_id}', 'success')
             return redirect(url_for('portal.complaint_status', reference_id=complaint.reference_id))
