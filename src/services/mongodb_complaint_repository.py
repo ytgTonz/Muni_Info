@@ -125,7 +125,7 @@ class MongoDBComplaintRepository:
             return 0
     
     def update_complaint_status(self, reference_id: str, new_status: ComplaintStatus, 
-                               notes: Optional[str] = None) -> bool:
+                               notes: Optional[str] = None) -> Optional[Complaint]:
         """Update complaint status"""
         try:
             update_data = {
@@ -141,10 +141,14 @@ class MongoDBComplaintRepository:
                 {"$set": update_data}
             )
             
-            return result.modified_count > 0
+            if result.modified_count > 0:
+                # Return the updated complaint
+                return self.get_complaint_by_reference(reference_id)
+            else:
+                return None
         except Exception as e:
             logger.error(f"Error updating complaint status: {e}")
-            return False
+            return None
     
     def delete_complaint(self, reference_id: str) -> bool:
         """Delete a complaint by reference ID"""
