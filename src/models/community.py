@@ -38,22 +38,22 @@ class Announcement:
     
     def get_priority_display(self) -> str:
         priority_map = {
-            AnnouncementPriority.LOW: "🟢 Low",
-            AnnouncementPriority.MEDIUM: "🟡 Medium",
-            AnnouncementPriority.HIGH: "🟠 High",
-            AnnouncementPriority.URGENT: "🔴 Urgent"
+            AnnouncementPriority.LOW: "Low",
+            AnnouncementPriority.MEDIUM: "Medium", 
+            AnnouncementPriority.HIGH: "High",
+            AnnouncementPriority.URGENT: "Urgent"
         }
-        return priority_map.get(self.priority, "❓ Unknown")
+        return priority_map.get(self.priority, "Unknown")
     
     def get_type_display(self) -> str:
         type_map = {
-            AnnouncementType.GENERAL: "📢 General",
-            AnnouncementType.MAINTENANCE: "🔧 Maintenance",
-            AnnouncementType.SERVICE_DISRUPTION: "⚠️ Service Disruption",
-            AnnouncementType.EVENT: "📅 Event",
-            AnnouncementType.EMERGENCY: "🚨 Emergency"
+            AnnouncementType.GENERAL: "General",
+            AnnouncementType.MAINTENANCE: "Maintenance",
+            AnnouncementType.SERVICE_DISRUPTION: "Service Disruption",
+            AnnouncementType.EVENT: "Event",
+            AnnouncementType.EMERGENCY: "Emergency"
         }
-        return type_map.get(self.announcement_type, "❓ Unknown")
+        return type_map.get(self.announcement_type, "Unknown")
     
     def to_dict(self):
         return {

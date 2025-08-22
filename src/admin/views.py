@@ -4,8 +4,10 @@ from functools import wraps
 from datetime import datetime, timedelta
 from src.services.user_service import user_service
 from src.services.complaint_service import complaint_service
+from src.services.community_service import community_service
 from src.models.user import UserRole
 from src.models.complaint import ComplaintStatus, ComplaintPriority
+from src.models.community import AnnouncementType, AnnouncementPriority
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -578,3 +580,183 @@ def _get_priority_color(priority: ComplaintPriority) -> str:
         ComplaintPriority.URGENT: '#dc3545'  # red
     }
     return colors.get(priority, '#6c757d')
+
+# Announcement Management Routes
+@admin_bp.route('/announcements')
+@login_required
+@require_dashboard_access
+def announcements():
+    """Announcements management page"""
+    # Get filter parameters
+    municipality_filter = request.args.get('municipality', '')
+    type_filter = request.args.get('type', '')
+    priority_filter = request.args.get('priority', '')
+    status_filter = request.args.get('status', '')
+    
+    # Get all announcements
+    all_announcements = community_service.repository._load_data(community_service.repository.announcements_file)
+    announcements = []
+    
+    # Convert to announcement objects and apply filters
+    for item in all_announcements:
+        announcement = community_service.repository._dict_to_announcement(item)
+        
+        # Apply filters
+        if municipality_filter and announcement.municipality != municipality_filter:
+            continue
+        if type_filter and announcement.announcement_type.value != type_filter:
+            continue
+        if priority_filter and announcement.priority.value != priority_filter:
+            continue
+        if status_filter:
+            if status_filter == 'active' and not announcement.is_active:
+                continue
+            elif status_filter == 'inactive' and announcement.is_active:
+                continue
+            elif status_filter == 'expired' and not announcement.is_expired():
+                continue
+        
+        announcements.append(announcement)
+    
+    # Sort by priority then by creation date
+    priority_order = {
+        AnnouncementPriority.URGENT: 0,
+        AnnouncementPriority.HIGH: 1,
+        AnnouncementPriority.MEDIUM: 2,
+        AnnouncementPriority.LOW: 3
+    }
+    announcements.sort(key=lambda x: (priority_order.get(x.priority, 4), -x.created_at.timestamp()))
+    
+    # Calculate statistics
+    total_announcements = len(all_announcements)
+    active_announcements = sum(1 for a in announcements if a.is_active and not a.is_expired())
+    urgent_announcements = sum(1 for a in announcements if a.priority == AnnouncementPriority.URGENT and a.is_active)
+    emergency_announcements = sum(1 for a in announcements if a.announcement_type == AnnouncementType.EMERGENCY and a.is_active)
+    
+    announcement_stats = {
+        'total': total_announcements,
+        'active': active_announcements,
+        'urgent': urgent_announcements,
+        'emergency': emergency_announcements
+    }
+    
+    return render_template('admin/announcements.html',
+                         announcements=announcements,
+                         announcement_stats=announcement_stats,
+                         municipality_filter=municipality_filter,
+                         type_filter=type_filter,
+                         priority_filter=priority_filter,
+                         status_filter=status_filter)
+
+@admin_bp.route('/announcements', methods=['POST'])
+@login_required
+@require_dashboard_access
+def create_announcement():
+    """Create new announcement"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['title', 'content', 'municipality', 'announcement_type', 'priority']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+        
+        # Parse announcement type and priority
+        try:
+            announcement_type = AnnouncementType(data['announcement_type'])
+            priority = AnnouncementPriority(data['priority'])
+        except ValueError as e:
+            return jsonify({'error': f'Invalid type or priority: {str(e)}'}), 400
+        
+        # Create announcement
+        announcement = community_service.create_announcement(
+            title=data['title'],
+            content=data['content'],
+            municipality=data['municipality'],
+            author=current_user.full_name,
+            announcement_type=announcement_type,
+            priority=priority,
+            expires_in_days=data.get('expires_in_days'),
+            areas_affected=data.get('areas_affected', []),
+            contact_info=data.get('contact_info')
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Announcement created successfully',
+            'announcement': announcement.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/announcements/<announcement_id>')
+@login_required  
+@require_dashboard_access
+def get_announcement(announcement_id):
+    """Get announcement details"""
+    try:
+        announcement = community_service.repository.get_announcement_by_id(announcement_id)
+        
+        if not announcement:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        return jsonify({
+            'success': True,
+            'announcement': announcement.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/announcements/<announcement_id>/toggle', methods=['POST'])
+@login_required
+@require_dashboard_access
+def toggle_announcement_status(announcement_id):
+    """Toggle announcement active status"""
+    try:
+        announcement = community_service.repository.get_announcement_by_id(announcement_id)
+        
+        if not announcement:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        # Toggle status
+        announcement.is_active = not announcement.is_active
+        community_service.repository.save_announcement(announcement)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Announcement {"activated" if announcement.is_active else "deactivated"}',
+            'is_active': announcement.is_active
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@admin_bp.route('/announcements/<announcement_id>', methods=['DELETE'])
+@login_required
+@require_dashboard_access  
+def delete_announcement(announcement_id):
+    """Delete announcement"""
+    try:
+        # Load all announcements
+        data = community_service.repository._load_data(community_service.repository.announcements_file)
+        
+        # Find and remove the announcement
+        original_count = len(data)
+        data = [item for item in data if item.get('announcement_id') != announcement_id]
+        
+        if len(data) == original_count:
+            return jsonify({'error': 'Announcement not found'}), 404
+        
+        # Save updated data
+        community_service.repository._save_data(community_service.repository.announcements_file, data)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Announcement deleted successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

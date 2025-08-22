@@ -82,6 +82,16 @@ class WebhookHandler:
                 response_text = whatsapp_service.handle_reference_lookup(reference_id, sender)
                 msg.body(response_text)
             
+            # Check for announcement requests
+            elif whatsapp_service.detect_announcement_request(incoming_msg):
+                # Get user location for targeted announcements
+                location_info = None
+                if hasattr(whatsapp_service, 'get_user_location'):
+                    location_info = whatsapp_service.get_user_location(sender)
+                
+                response_text = whatsapp_service.handle_announcements_command(sender, location_info)
+                msg.body(response_text)
+            
             # Auto-detect language from message
             elif current_state == "start":
                 detected_language = language_service.detect_language(incoming_msg)

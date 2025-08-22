@@ -73,7 +73,7 @@
                 </div>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
+                <div class="table-responsive table-responsive-mobile">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
@@ -81,37 +81,37 @@
                                 <th>Type</th>
                                 <th>Status</th>
                                 <th>Priority</th>
-                                <th>Submitted</th>
-                                <th>Updated</th>
+                                <th class="mobile-hidden">Submitted</th>
+                                <th class="mobile-hidden">Updated</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for complaint in complaints %}
                             <tr>
-                                <td>
+                                <td data-label="Reference">
                                     <a href="{{ url_for('admin.complaint_detail', reference_id=complaint.reference_id) }}" 
                                        class="text-decoration-none fw-bold">
                                         {{ complaint.reference_id }}
                                     </a>
                                 </td>
-                                <td>
+                                <td data-label="Type">
                                     <span class="badge bg-secondary">{{ complaint.complaint_type }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="badge badge-status-{{ complaint.status.value }}">
                                         {{ complaint.get_status_display() }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Priority">
                                     <span class="badge badge-priority-{{ complaint.priority.value }}">
                                         {{ complaint.get_priority_display() }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Submitted" class="mobile-hidden">
                                     <small>{{ complaint.timestamp.strftime('%d %b %Y %H:%M') }}</small>
                                 </td>
-                                <td>
+                                <td data-label="Updated" class="mobile-hidden">
                                     <small>
                                         {% if complaint.updated_at != complaint.timestamp %}
                                             {{ complaint.updated_at.strftime('%d %b %Y %H:%M') }}
@@ -120,13 +120,14 @@
                                         {% endif %}
                                     </small>
                                 </td>
-                                <td>
+                                <td data-label="Actions">
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ url_for('admin.complaint_detail', reference_id=complaint.reference_id) }}" 
-                                           class="btn btn-outline-primary btn-sm">
+                                           class="btn btn-outline-primary btn-sm" title="View Details">
                                             <i class="fas fa-eye"></i>
+                                            <span class="d-md-none ms-1">View</span>
                                         </a>
-                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                        <button type="button" class="btn btn-outline-success btn-sm" title="Quick Update" 
                                                 onclick="updateComplaintStatus('{{ complaint.reference_id }}', 'resolved')">
                                             <i class="fas fa-check"></i>
                                         </button>

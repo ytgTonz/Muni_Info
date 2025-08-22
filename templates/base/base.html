@@ -263,6 +263,197 @@
             margin-top: 3rem;
         }
         
+        /* Mobile responsiveness */
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1050;
+            background-color: var(--gov-primary);
+            border: 2px solid var(--gov-secondary);
+            border-radius: 0.375rem;
+            padding: 8px 12px;
+            color: white;
+        }
+        
+        .mobile-nav-toggle:hover {
+            background-color: var(--gov-secondary);
+        }
+        
+        /* Mobile sidebar overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
+        
+        /* Responsive tables */
+        @media (max-width: 768px) {
+            .table-responsive-mobile {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .table-responsive-mobile table {
+                border: none;
+            }
+            
+            .table-responsive-mobile thead {
+                display: none;
+            }
+            
+            .table-responsive-mobile tr {
+                border: 1px solid var(--gov-border);
+                display: block;
+                margin-bottom: 1rem;
+                border-radius: 0.375rem;
+                background: white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .table-responsive-mobile td {
+                border: none;
+                display: block;
+                text-align: right;
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid var(--gov-border);
+            }
+            
+            .table-responsive-mobile td:last-child {
+                border-bottom: none;
+            }
+            
+            .table-responsive-mobile td:before {
+                content: attr(data-label) ": ";
+                float: left;
+                font-weight: bold;
+                color: var(--gov-primary);
+            }
+            
+            /* Mobile card spacing */
+            .mobile-card-stack .card {
+                margin-bottom: 1rem;
+            }
+            
+            .mobile-hidden {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 991.98px) {
+            /* Show mobile nav toggle */
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            /* Hide sidebar by default on mobile */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                width: 300px;
+                height: 100vh;
+                z-index: 1045;
+                transition: left 0.3s ease-in-out;
+                overflow-y: auto;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+            
+            /* Adjust main content */
+            .main-content {
+                margin-left: 0 !important;
+                padding-top: 60px;
+            }
+            
+            /* Responsive page header */
+            .page-header {
+                flex-direction: column;
+                align-items: stretch !important;
+            }
+            
+            .page-header .btn-toolbar {
+                margin-top: 1rem;
+                justify-content: center;
+            }
+            
+            /* Stack action buttons on mobile */
+            .btn-toolbar .btn-group,
+            .btn-toolbar .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            /* Responsive stat cards */
+            .stat-card {
+                margin-bottom: 1rem;
+            }
+            
+            .stat-card .card-body {
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            /* Very small screens */
+            .container-fluid {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            .main-content {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            /* Smaller text on very small screens */
+            .h2 {
+                font-size: 1.5rem;
+            }
+            
+            /* Full width buttons */
+            .btn-toolbar .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem;
+            }
+            
+            /* Compact sidebar */
+            .sidebar {
+                width: 280px;
+                left: -280px;
+            }
+            
+            .sidebar .nav-link {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            /* Responsive modals */
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            /* Smaller form controls */
+            .form-control,
+            .form-select {
+                font-size: 0.9rem;
+            }
+        }
+        
         /* High contrast mode support */
         @media (prefers-contrast: high) {
             .card {
@@ -300,10 +491,18 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
     {% if current_user.is_authenticated %}
+    <!-- Mobile nav toggle -->
+    <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" role="navigation" aria-label="Main navigation">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
                 <div class="position-sticky pt-3">
                     <div class="text-center mb-4">
                         <div class="gov-logo">
@@ -326,6 +525,13 @@
                                href="{{ url_for('admin.complaints') }}">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
                                 Complaints
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'admin.announcements' %}active{% endif %}" 
+                               href="{{ url_for('admin.announcements') }}">
+                                <i class="fas fa-bullhorn me-2"></i>
+                                Announcements
                             </a>
                         </li>
                         <li class="nav-item">
@@ -422,6 +628,65 @@
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Mobile navigation script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileNavToggle = document.getElementById('mobileNavToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (mobileNavToggle && sidebar && sidebarOverlay) {
+                // Toggle mobile navigation
+                function toggleMobileNav() {
+                    sidebar.classList.toggle('show');
+                    sidebarOverlay.classList.toggle('show');
+                    
+                    // Update aria-expanded for accessibility
+                    const isOpen = sidebar.classList.contains('show');
+                    mobileNavToggle.setAttribute('aria-expanded', isOpen);
+                    
+                    // Update icon
+                    const icon = mobileNavToggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-bars', !isOpen);
+                        icon.classList.toggle('fa-times', isOpen);
+                    }
+                }
+                
+                // Close mobile navigation
+                function closeMobileNav() {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    mobileNavToggle.setAttribute('aria-expanded', 'false');
+                    
+                    const icon = mobileNavToggle.querySelector('i');
+                    if (icon) {
+                        icon.classList.add('fa-bars');
+                        icon.classList.remove('fa-times');
+                    }
+                }
+                
+                // Event listeners
+                mobileNavToggle.addEventListener('click', toggleMobileNav);
+                sidebarOverlay.addEventListener('click', closeMobileNav);
+                
+                // Close on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                        closeMobileNav();
+                    }
+                });
+                
+                // Close on window resize to desktop size
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 992) {
+                        closeMobileNav();
+                    }
+                });
+            }
+        });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

@@ -16,9 +16,9 @@
 {% endblock %}
 
 {% block main_content %}
-<div class="row">
+<div class="row mobile-card-stack">
     <!-- Complaint Information -->
-    <div class="col-lg-8">
+    <div class="col-lg-8 order-2 order-lg-1">
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="mb-0">
@@ -28,22 +28,22 @@
             </div>
             <div class="card-body">
                 <div class="row mb-3">
-                    <div class="col-sm-3"><strong>Reference ID:</strong></div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-3 col-12"><strong>Reference ID:</strong></div>
+                    <div class="col-sm-9 col-12">
                         <code>{{ complaint.reference_id }}</code>
                     </div>
                 </div>
                 
                 <div class="row mb-3">
-                    <div class="col-sm-3"><strong>Type:</strong></div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-3 col-12"><strong>Type:</strong></div>
+                    <div class="col-sm-9 col-12">
                         <span class="badge bg-secondary fs-6">{{ complaint.complaint_type }}</span>
                     </div>
                 </div>
                 
                 <div class="row mb-3">
-                    <div class="col-sm-3"><strong>Status:</strong></div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-3 col-12"><strong>Status:</strong></div>
+                    <div class="col-sm-9 col-12">
                         <span class="badge badge-status-{{ complaint.status.value }} fs-6">
                             {{ complaint.get_status_display() }}
                         </span>
@@ -51,8 +51,8 @@
                 </div>
                 
                 <div class="row mb-3">
-                    <div class="col-sm-3"><strong>Priority:</strong></div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-3 col-12"><strong>Priority:</strong></div>
+                    <div class="col-sm-9 col-12">
                         <span class="badge badge-priority-{{ complaint.priority.value }} fs-6">
                             {{ complaint.get_priority_display() }}
                         </span>
@@ -144,7 +144,7 @@
     </div>
     
     <!-- Sidebar -->
-    <div class="col-lg-4">
+    <div class="col-lg-4 order-1 order-lg-2">
         <!-- Contact Information -->
         <div class="card mb-4">
             <div class="card-header">

@@ -114,7 +114,7 @@
                                 </div>
                                 {% if announcement.expires_at %}
                                 <div>
-                                    <small class="text-{% if announcement.expires_at < moment().add(days=1) %}danger{% else %}muted{% endif %}">
+                                    <small class="text-{% if announcement.is_expired() %}danger{% else %}muted{% endif %}">
                                         <i class="fas fa-clock me-1"></i>
                                         Expires: {{ announcement.expires_at.strftime('%d %b %Y') }}
                                     </small>

@@ -173,7 +173,8 @@ def location_lookup():
         except (TypeError, ValueError):
             flash('Invalid coordinates provided', 'error')
     
-    return render_template('portal/location.html', location=result)
+    from src.config import Config
+    return render_template('portal/location.html', location=result, config=Config)
 
 @portal_bp.route('/api/location/enhanced')
 def api_enhanced_location():

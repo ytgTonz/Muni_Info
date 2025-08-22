@@ -271,5 +271,70 @@ class WhatsAppService:
         pattern = r'MI-\d{4}-\d{6}'
         match = re.search(pattern, text.upper())
         return match.group(0) if match else None
+    
+    def handle_announcements_command(self, sender: str, location_info=None) -> str:
+        """Handle announcements command"""
+        from src.services.community_service import community_service
+        
+        municipality = None
+        if location_info and hasattr(location_info, 'municipality'):
+            municipality = location_info.municipality
+        
+        # Get active announcements
+        announcements = community_service.get_announcements_for_user(municipality)
+        
+        if not announcements:
+            if municipality:
+                return f"No active announcements found for {municipality}."
+            else:
+                return "No active announcements available at this time."
+        
+        # Format response
+        response = "📢 *ACTIVE ANNOUNCEMENTS*\n\n"
+        
+        for i, announcement in enumerate(announcements[:3], 1):  # Limit to 3 for WhatsApp
+            response += f"*{i}. {announcement.title}*\n"
+            response += f"Type: {announcement.get_type_display()}\n"
+            response += f"Priority: {announcement.get_priority_display()}\n"
+            
+            if announcement.municipality:
+                response += f"Municipality: {announcement.municipality}\n"
+            
+            # Truncate content for WhatsApp
+            content = announcement.content
+            if len(content) > 150:
+                content = content[:147] + "..."
+            response += f"\n{content}\n"
+            
+            if announcement.areas_affected:
+                response += f"Areas: {', '.join(announcement.areas_affected[:2])}\n"
+            
+            if announcement.contact_info:
+                response += f"Contact: {announcement.contact_info}\n"
+            
+            response += f"Posted: {announcement.created_at.strftime('%d %b %Y')}\n"
+            
+            if announcement.expires_at:
+                response += f"Expires: {announcement.expires_at.strftime('%d %b %Y')}\n"
+            
+            response += "\n" + "─" * 30 + "\n\n"
+        
+        if len(announcements) > 3:
+            response += f"+ {len(announcements) - 3} more announcements available.\n"
+            response += "Visit the municipal website for complete list.\n\n"
+        
+        response += "Reply *HELP* for more commands."
+        return response
+    
+    def detect_announcement_request(self, text: str) -> bool:
+        """Detect if user is requesting announcements"""
+        keywords = [
+            'announcement', 'announcements', 'news', 'updates', 
+            'notices', 'alerts', 'information', 'what\'s new',
+            'any news', 'latest', 'current'
+        ]
+        
+        text_lower = text.lower()
+        return any(keyword in text_lower for keyword in keywords)
 
 whatsapp_service = WhatsAppService()

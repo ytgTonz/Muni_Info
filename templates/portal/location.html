@@ -212,29 +212,32 @@
                         </div>
                         {% endif %}
 
-                        <!-- Interactive Map (placeholder for future implementation) -->
+                        <!-- Interactive Google Map -->
                         <div class="card mb-4">
-                            <div class="card-header bg-secondary text-white">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <i class="fas fa-map me-2"></i>Location Map
                                 </h5>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-light btn-sm" onclick="toggleMapLayer('services')" id="toggleServices">
+                                        <i class="fas fa-building me-1"></i>Services
+                                    </button>
+                                </div>
                             </div>
                             <div class="card-body">
-                                <div id="location-map" style="height: 300px; background-color: #f8f9fa; border: 2px dashed #dee2e6;">
-                                    <div class="d-flex align-items-center justify-content-center h-100">
-                                        <div class="text-center text-muted">
-                                            <i class="fas fa-map fa-3x mb-3"></i>
-                                            <p>Interactive map will be displayed here</p>
-                                            <small>Showing location, ward boundaries, and service centers</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mt-3">
-                                    <button class="btn btn-outline-primary btn-sm" onclick="openExternalMap()">
-                                        <i class="fas fa-external-link-alt me-1"></i>View on Google Maps
+                                <div id="location-map" style="height: 400px; border-radius: 0.375rem;"></div>
+                                <div class="mt-3 d-flex gap-2 flex-wrap">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="centerMapOnLocation()">
+                                        <i class="fas fa-crosshairs me-1"></i>Center on Location
                                     </button>
-                                    <button class="btn btn-outline-info btn-sm" onclick="getDirections()">
+                                    <button class="btn btn-outline-success btn-sm" onclick="getDirections()">
                                         <i class="fas fa-directions me-1"></i>Get Directions
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" onclick="openExternalMap()">
+                                        <i class="fas fa-external-link-alt me-1"></i>Open in Google Maps
+                                    </button>
+                                    <button class="btn btn-outline-warning btn-sm" onclick="shareLocation()">
+                                        <i class="fas fa-share-alt me-1"></i>Share Location
                                     </button>
                                 </div>
                             </div>
@@ -441,6 +444,171 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- Google Maps JavaScript API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&callback=initializeGoogleMap&libraries=places,geometry"></script>
+
+<script>
+// Google Maps integration
+let map;
+let userLocationMarker;
+let serviceCenters = [];
+let serviceMarkersVisible = false;
+
+function initializeGoogleMap() {
+    {% if location %}
+    const lat = {{ location.latitude }};
+    const lon = {{ location.longitude }};
+    
+    // Initialize map centered on user location
+    map = new google.maps.Map(document.getElementById('location-map'), {
+        zoom: 14,
+        center: { lat: lat, lng: lon },
+        mapTypeId: 'roadmap',
+        styles: [
+            {
+                featureType: 'administrative.locality',
+                elementType: 'labels.text',
+                stylers: [{ visibility: 'on' }, { color: '#1e3a8a' }]
+            },
+            {
+                featureType: 'administrative.neighborhood',
+                elementType: 'labels.text',
+                stylers: [{ visibility: 'on' }, { color: '#059669' }]
+            }
+        ]
+    });
+    
+    // Add user location marker
+    userLocationMarker = new google.maps.Marker({
+        position: { lat: lat, lng: lon },
+        map: map,
+        title: 'Your Location',
+        icon: {
+            url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiMzMzY2RkYiLz4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTAiIGZpbGw9IndoaXRlIi8+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjQiIGZpbGw9IiMzMzY2RkYiLz4KPC9zdmc+',
+            scaledSize: new google.maps.Size(24, 24)
+        }
+    });
+    
+    // Add info window for user location
+    const userInfoWindow = new google.maps.InfoWindow({
+        content: `
+            <div class="p-2">
+                <h6 class="mb-1">Your Location</h6>
+                <p class="mb-1 small">{{ location.formatted_address or "Lat: " + location.latitude|string + ", Lon: " + location.longitude|string }}</p>
+                {% if location.municipality %}
+                <p class="mb-0 small text-muted">{{ location.municipality }}</p>
+                {% endif %}
+            </div>
+        `
+    });
+    
+    userLocationMarker.addListener('click', () => {
+        userInfoWindow.open(map, userLocationMarker);
+    });
+    
+    // Load and display service centers
+    loadNearbyServices(lat, lon);
+    {% else %}
+    // Show message that location is needed
+    document.getElementById('location-map').innerHTML = `
+        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+            <div class="text-center">
+                <i class="fas fa-map fa-3x mb-3"></i>
+                <p>Please enter your location coordinates to view the map</p>
+            </div>
+        </div>
+    `;
+    {% endif %}
+}
+
+function loadNearbyServices(lat, lon) {
+    // Load service centers from our backend
+    fetch(`/portal/api/location/service-centers?lat=${lat}&lon=${lon}&radius=5000`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.service_centers) {
+                displayServiceCenters(data.service_centers);
+            }
+        })
+        .catch(error => {
+            console.log('Could not load service centers:', error);
+        });
+}
+
+function displayServiceCenters(centers) {
+    serviceCenters = [];
+    
+    centers.forEach(center => {
+        const marker = new google.maps.Marker({
+            position: { lat: center.latitude, lng: center.longitude },
+            map: map,
+            title: center.name,
+            icon: {
+                url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAyNCAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40NzcgMiAyIDYuNDc3IDIgMTJDMiAxNy41MjMgMTIgMzAgMTIgMzBTMjIgMTcuNTIzIDIyIDEyQzIyIDYuNDc3IDE3LjUyMyAyIDEyIDJaIiBmaWxsPSIjMTA5OTZGIi8+CjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==',
+                scaledSize: new google.maps.Size(20, 28)
+            }
+        });
+        
+        const infoWindow = new google.maps.InfoWindow({
+            content: `
+                <div class="p-2">
+                    <h6 class="mb-1">${center.name}</h6>
+                    <p class="mb-1 small">${center.address}</p>
+                    <p class="mb-1 small"><strong>Distance:</strong> ${center.distance}km</p>
+                    ${center.services ? `<p class="mb-0 small"><strong>Services:</strong> ${center.services.slice(0, 2).join(', ')}${center.services.length > 2 ? '...' : ''}</p>` : ''}
+                </div>
+            `
+        });
+        
+        marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+        });
+        
+        serviceCenters.push({ marker, infoWindow });
+    });
+    
+    // Show services by default
+    serviceMarkersVisible = true;
+    document.getElementById('toggleServices').classList.add('active');
+}
+
+function toggleMapLayer(layerType) {
+    if (layerType === 'services') {
+        serviceMarkersVisible = !serviceMarkersVisible;
+        const button = document.getElementById('toggleServices');
+        
+        serviceCenters.forEach(center => {
+            center.marker.setVisible(serviceMarkersVisible);
+        });
+        
+        if (serviceMarkersVisible) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
+    }
+}
+
+function centerMapOnLocation() {
+    {% if location %}
+    const lat = {{ location.latitude }};
+    const lon = {{ location.longitude }};
+    
+    if (map) {
+        map.setCenter({ lat: lat, lng: lon });
+        map.setZoom(16);
+        
+        // Bounce the user location marker
+        if (userLocationMarker) {
+            userLocationMarker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(() => {
+                userLocationMarker.setAnimation(null);
+            }, 2000);
+        }
+    }
+    {% endif %}
+}</script>
+
 <script>
 function getCurrentLocation() {
     if (navigator.geolocation) {
