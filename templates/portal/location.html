@@ -56,44 +56,230 @@
                         </div>
                     </div>
                     
-                    <!-- Location Result -->
+                    <!-- Enhanced Location Result -->
                     {% if location %}
-                    <div class="alert alert-success">
-                        <h5 class="alert-heading">
-                            <i class="fas fa-check-circle me-2"></i>Location Found!
-                        </h5>
-                        <hr>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Municipality:</strong> {{ location.municipality }}</p>
-                                <p><strong>Province:</strong> {{ location.province }}</p>
-                                <p><strong>District:</strong> {{ location.district_municipality }}</p>
+                    <div class="location-results">
+                        <!-- Basic Location Info -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Location Information
+                                </h5>
                             </div>
-                            <div class="col-md-6">
-                                <p><strong>Coordinates:</strong> {{ "%.4f"|format(location.latitude) }}, {{ "%.4f"|format(location.longitude) }}</p>
-                                <p><strong>Area Type:</strong> {{ location.area_type }}</p>
-                                {% if location.ward_number %}
-                                <p><strong>Ward:</strong> {{ location.ward_number }}</p>
-                                {% endif %}
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary">Administrative Areas</h6>
+                                        <p class="mb-1"><strong>Municipality:</strong> {{ location.municipality or 'Not available' }}</p>
+                                        <p class="mb-1"><strong>Province:</strong> {{ location.province or 'Not available' }}</p>
+                                        <p class="mb-1"><strong>District:</strong> {{ location.district or 'Not available' }}</p>
+                                        <p class="mb-0"><strong>Coordinates:</strong> {{ "%.6f"|format(location.latitude) }}, {{ "%.6f"|format(location.longitude) }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary">Address Details</h6>
+                                        {% if location.formatted_address %}
+                                        <p class="mb-1"><strong>Address:</strong> {{ location.formatted_address }}</p>
+                                        {% endif %}
+                                        {% if location.street_name %}
+                                        <p class="mb-1"><strong>Street:</strong> 
+                                            {% if location.street_number %}{{ location.street_number }} {% endif %}{{ location.street_name }}
+                                        </p>
+                                        {% endif %}
+                                        {% if location.suburb %}
+                                        <p class="mb-1"><strong>Suburb:</strong> {{ location.suburb }}</p>
+                                        {% endif %}
+                                        {% if location.postal_code %}
+                                        <p class="mb-0"><strong>Postal Code:</strong> {{ location.postal_code }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ward Information -->
+                        {% if location.ward_info %}
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>Ward & Councillor Information
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary">Ward Details</h6>
+                                        {% if location.ward_info.ward_number %}
+                                        <p class="mb-1"><strong>Ward Number:</strong> {{ location.ward_info.ward_number }}</p>
+                                        {% endif %}
+                                        {% if location.ward_info.ward_office_address %}
+                                        <p class="mb-1"><strong>Ward Office:</strong> {{ location.ward_info.ward_office_address }}</p>
+                                        {% endif %}
+                                        {% if location.ward_info.ward_office_phone %}
+                                        <p class="mb-1"><strong>Office Phone:</strong> 
+                                            <a href="tel:{{ location.ward_info.ward_office_phone }}">{{ location.ward_info.ward_office_phone }}</a>
+                                        </p>
+                                        {% endif %}
+                                        {% if location.ward_info.office_hours %}
+                                        <p class="mb-0"><strong>Office Hours:</strong> {{ location.ward_info.office_hours }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary">Councillor Information</h6>
+                                        {% if location.ward_info.councillor_name %}
+                                        <p class="mb-1"><strong>Councillor:</strong> {{ location.ward_info.councillor_name }}</p>
+                                        {% endif %}
+                                        {% if location.ward_info.councillor_party %}
+                                        <p class="mb-1"><strong>Party:</strong> {{ location.ward_info.councillor_party }}</p>
+                                        {% endif %}
+                                        {% if location.ward_info.councillor_contact %}
+                                        <p class="mb-1"><strong>Contact:</strong> 
+                                            <a href="tel:{{ location.ward_info.councillor_contact }}">{{ location.ward_info.councillor_contact }}</a>
+                                        </p>
+                                        {% endif %}
+                                        {% if location.ward_info.councillor_email %}
+                                        <p class="mb-0"><strong>Email:</strong> 
+                                            <a href="mailto:{{ location.ward_info.councillor_email }}">{{ location.ward_info.councillor_email }}</a>
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Nearest Service Centers -->
+                        {% if location.nearest_service_centers %}
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-building me-2"></i>Nearest Municipal Service Centers
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    {% for center in location.nearest_service_centers %}
+                                    <div class="col-lg-6 mb-3">
+                                        <div class="card h-100 border-info">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <h6 class="card-title text-info">{{ center.name }}</h6>
+                                                    {% if center.distance_km %}
+                                                    <span class="badge bg-info">{{ "%.1f"|format(center.distance_km) }} km</span>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="card-text mb-2">
+                                                    <i class="fas fa-map-marker-alt text-muted me-1"></i>{{ center.address }}
+                                                </p>
+                                                {% if center.phone %}
+                                                <p class="card-text mb-2">
+                                                    <i class="fas fa-phone text-muted me-1"></i>
+                                                    <a href="tel:{{ center.phone }}">{{ center.phone }}</a>
+                                                </p>
+                                                {% endif %}
+                                                {% if center.operating_hours %}
+                                                <p class="card-text mb-2">
+                                                    <i class="fas fa-clock text-muted me-1"></i>{{ center.operating_hours }}
+                                                </p>
+                                                {% endif %}
+                                                {% if center.services %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Services:</small>
+                                                    <div class="mt-1">
+                                                        {% for service in center.services[:4] %}
+                                                        <span class="badge bg-light text-dark me-1">{{ service }}</span>
+                                                        {% endfor %}
+                                                        {% if center.services|length > 4 %}
+                                                        <span class="badge bg-secondary">+{{ center.services|length - 4 }} more</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                {% if center.rating %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">Rating:</small>
+                                                    <span class="text-warning">
+                                                        {% for i in range((center.rating)|round|int) %}★{% endfor %}
+                                                        {{ "%.1f"|format(center.rating) }}
+                                                    </span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Interactive Map (placeholder for future implementation) -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-map me-2"></i>Location Map
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="location-map" style="height: 300px; background-color: #f8f9fa; border: 2px dashed #dee2e6;">
+                                    <div class="d-flex align-items-center justify-content-center h-100">
+                                        <div class="text-center text-muted">
+                                            <i class="fas fa-map fa-3x mb-3"></i>
+                                            <p>Interactive map will be displayed here</p>
+                                            <small>Showing location, ward boundaries, and service centers</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="openExternalMap()">
+                                        <i class="fas fa-external-link-alt me-1"></i>View on Google Maps
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" onclick="getDirections()">
+                                        <i class="fas fa-directions me-1"></i>Get Directions
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         
                         <!-- Quick Actions for this Location -->
-                        <div class="mt-3">
-                            <h6>Quick Actions for {{ location.municipality }}:</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="{{ url_for('portal.submit_complaint') }}?municipality={{ location.municipality }}" 
-                                   class="btn btn-primary btn-sm">
-                                    <i class="fas fa-exclamation-triangle me-1"></i>Lodge Complaint
-                                </a>
-                                <a href="{{ url_for('portal.announcements') }}?municipality={{ location.municipality }}" 
-                                   class="btn btn-info btn-sm">
-                                    <i class="fas fa-bullhorn me-1"></i>Local Announcements
-                                </a>
-                                <a href="{{ url_for('portal.rate_service') }}?municipality={{ location.municipality }}" 
-                                   class="btn btn-success btn-sm">
-                                    <i class="fas fa-star me-1"></i>Rate Services
-                                </a>
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-bolt me-2"></i>Quick Actions for {{ location.municipality or 'This Location' }}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <a href="{{ url_for('portal.submit_complaint') }}{% if location.municipality %}?municipality={{ location.municipality }}{% endif %}" 
+                                           class="btn btn-primary w-100">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>Lodge Complaint
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="{{ url_for('portal.announcements') }}{% if location.municipality %}?municipality={{ location.municipality }}{% endif %}" 
+                                           class="btn btn-info w-100">
+                                            <i class="fas fa-bullhorn me-2"></i>Local Announcements
+                                        </a>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="{{ url_for('portal.rate_service') }}{% if location.municipality %}?municipality={{ location.municipality }}{% endif %}" 
+                                           class="btn btn-success w-100">
+                                            <i class="fas fa-star me-2"></i>Rate Services
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-6">
+                                        <a href="{{ url_for('portal.emergency_services') }}" class="btn btn-danger w-100">
+                                            <i class="fas fa-phone me-2"></i>Emergency Services
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button class="btn btn-outline-secondary w-100" onclick="shareLocation()">
+                                            <i class="fas fa-share me-2"></i>Share Location
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -314,6 +500,122 @@ function selectMunicipality(municipality) {
     if (confirm(`You selected ${municipality}. Would you like to proceed with services for this municipality?`)) {
         // For now, redirect to submit complaint page with municipality pre-filled
         window.location.href = `{{ url_for('portal.submit_complaint') }}?municipality=${encodeURIComponent(municipality)}`;
+    }
+}
+
+// Enhanced location functions for the new features
+function openExternalMap() {
+    {% if location %}
+    const lat = {{ location.latitude }};
+    const lon = {{ location.longitude }};
+    const url = `https://www.google.com/maps?q=${lat},${lon}`;
+    window.open(url, '_blank');
+    {% else %}
+    alert('Location information not available');
+    {% endif %}
+}
+
+function getDirections() {
+    {% if location %}
+    const lat = {{ location.latitude }};
+    const lon = {{ location.longitude }};
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
+    window.open(url, '_blank');
+    {% else %}
+    alert('Location information not available');
+    {% endif %}
+}
+
+function shareLocation() {
+    {% if location %}
+    const lat = {{ location.latitude }};
+    const lon = {{ location.longitude }};
+    const municipality = "{{ location.municipality or 'Unknown' }}";
+    const text = `Location: ${municipality}\nCoordinates: ${lat}, ${lon}\nView on Muni-Info: ${window.location.href}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Location Information',
+            text: text,
+            url: window.location.href
+        });
+    } else {
+        // Fallback to copying to clipboard
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Location information copied to clipboard!');
+        }).catch(() => {
+            // Fallback for older browsers
+            prompt('Copy this location information:', text);
+        });
+    }
+    {% else %}
+    alert('No location information to share');
+    {% endif %}
+}
+
+// Enhanced geolocation with better accuracy
+function getCurrentLocationEnhanced() {
+    if (navigator.geolocation) {
+        const button = event.target;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting Enhanced Location...';
+        button.disabled = true;
+        
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 30000
+        };
+        
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                
+                // Use the enhanced location API
+                fetch(`{{ url_for('portal.api_enhanced_location') }}?lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Redirect to location page with enhanced info
+                            window.location.href = `{{ url_for('portal.location_lookup') }}?lat=${lat}&lon=${lon}`;
+                        } else {
+                            console.error('Enhanced location failed:', data.error);
+                            // Fallback to basic location
+                            window.location.href = `{{ url_for('portal.location_lookup') }}?lat=${lat}&lon=${lon}`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Enhanced location API error:', error);
+                        // Fallback to basic location
+                        window.location.href = `{{ url_for('portal.location_lookup') }}?lat=${lat}&lon=${lon}`;
+                    });
+            },
+            function(error) {
+                button.innerHTML = '<i class="fas fa-location-arrow me-2"></i>Get My Location';
+                button.disabled = false;
+                
+                let errorMsg = 'Unable to get your location. ';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMsg += 'Location access was denied. Please enable location services and try again.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMsg += 'Location information is unavailable. Please try the manual entry option.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMsg += 'Location request timed out. Please try again.';
+                        break;
+                    default:
+                        errorMsg += 'An unknown error occurred.';
+                        break;
+                }
+                alert(errorMsg);
+            },
+            options
+        );
+    } else {
+        alert('Geolocation is not supported by this browser. Please use the manual entry option.');
     }
 }
 </script>

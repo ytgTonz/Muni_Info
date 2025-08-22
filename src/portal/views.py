@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 from src.services.complaint_service import complaint_service
 from src.services.community_service import community_service
 from src.services.location_service import location_service
+from src.services.location_enhancement_service import location_enhancement_service
 from src.models.complaint import ComplaintPriority
 
 portal_bp = Blueprint('portal', __name__, url_prefix='/portal')
@@ -130,7 +131,7 @@ def announcements():
 
 @portal_bp.route('/location')
 def location_lookup():
-    """Location identification tool"""
+    """Enhanced location identification tool"""
     result = None
     
     if request.args.get('lat') and request.args.get('lon'):
@@ -138,13 +139,109 @@ def location_lookup():
             lat = float(request.args.get('lat'))
             lon = float(request.args.get('lon'))
             
-            location = location_service.get_location_from_coordinates(lat, lon)
+            # Use enhanced location service
+            location = location_enhancement_service.get_enhanced_location_info(lat, lon)
             result = location
             
         except (TypeError, ValueError):
             flash('Invalid coordinates provided', 'error')
     
     return render_template('portal/location.html', location=result)
+
+@portal_bp.route('/api/location/enhanced')
+def api_enhanced_location():
+    """API endpoint for enhanced location information"""
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    
+    if not lat or not lon:
+        return jsonify({'error': 'Latitude and longitude are required'}), 400
+    
+    try:
+        lat = float(lat)
+        lon = float(lon)
+        
+        location = location_enhancement_service.get_enhanced_location_info(lat, lon)
+        
+        return jsonify({
+            'success': True,
+            'location': location.to_dict()
+        })
+        
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid coordinates'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@portal_bp.route('/api/location/service-centers')
+def api_service_centers():
+    """API endpoint for nearby service centers"""
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    municipality = request.args.get('municipality')
+    radius = request.args.get('radius', 10.0)
+    
+    if not lat or not lon:
+        return jsonify({'error': 'Latitude and longitude are required'}), 400
+    
+    try:
+        lat = float(lat)
+        lon = float(lon)
+        radius = float(radius)
+        
+        service_centers = location_enhancement_service.find_nearest_service_centers(
+            lat, lon, municipality, radius
+        )
+        
+        return jsonify({
+            'success': True,
+            'service_centers': [center.__dict__ for center in service_centers]
+        })
+        
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid parameters'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@portal_bp.route('/api/location/ward-info')
+def api_ward_info():
+    """API endpoint for ward information"""
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    municipality = request.args.get('municipality')
+    
+    if not lat or not lon:
+        return jsonify({'error': 'Latitude and longitude are required'}), 400
+    
+    try:
+        lat = float(lat)
+        lon = float(lon)
+        
+        ward_info = location_enhancement_service.get_ward_info(lat, lon, municipality)
+        
+        return jsonify({
+            'success': True,
+            'ward_info': ward_info.__dict__ if ward_info else None
+        })
+        
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Invalid coordinates'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@portal_bp.route('/api/location/boundaries/<municipality>')
+def api_service_boundaries(municipality):
+    """API endpoint for service area boundaries"""
+    try:
+        boundaries = location_enhancement_service.get_service_area_boundaries(municipality)
+        
+        return jsonify({
+            'success': True,
+            'boundaries': boundaries
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @portal_bp.route('/emergency')
 def emergency_services():
